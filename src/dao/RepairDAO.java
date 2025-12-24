@@ -17,6 +17,13 @@ public class RepairDAO {
      */
     public void insertRepair(Repair repair) {
         // TODO
+        // 实现说明：
+        // 1. SQL: INSERT INTO Repair (Content, SubmitTime, Status, SubmitterID, HandlerID) VALUES (?, ?, ?, ?, ?)
+        //    - SubmitTime 可使用 CURRENT_TIMESTAMP 或由 Java 端传入
+        //    - HandlerID 在提交时通常为空
+        // 2. 使用 PreparedStatement 设置参数并执行更新
+        // 3. 可通过 getGeneratedKeys 获取 RepairID 并设置回 repair
+        // 4. 关闭资源并处理异常
     }
 
     /**
@@ -26,6 +33,10 @@ public class RepairDAO {
      */
     public Repair selectById(int repairId) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE RepairID = ?
+        // 2. 执行查询并将结果映射到 Repair 对象
+        // 3. 关闭资源并返回 Repair 或 null
         return null;
     }
 
@@ -37,6 +48,11 @@ public class RepairDAO {
      */
     public List<Repair> selectBySubmitterIdAndStatus(String submitterId, String status) {
         // TODO
+        // 实现说明：
+        // 1. 如果 status 为 null，SQL: SELECT * FROM Repair WHERE SubmitterID = ? ORDER BY SubmitTime DESC
+        //    否则 SQL: SELECT * FROM Repair WHERE SubmitterID = ? AND Status = ? ORDER BY SubmitTime DESC
+        // 2. 执行查询并将每行映射为 Repair 加入列表
+        // 3. 关闭资源并返回列表
         return new ArrayList<>();
     }
 
@@ -46,6 +62,10 @@ public class RepairDAO {
      */
     public List<Repair> selectAll() {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair ORDER BY SubmitTime DESC
+        // 2. 执行查询并映射结果集到列表
+        // 3. 关闭资源并返回
         return new ArrayList<>();
     }
 
@@ -57,6 +77,10 @@ public class RepairDAO {
      */
     public void updateHandlerAndStatus(int repairId, String handlerId, String status) {
         // TODO
+        // 实现说明：
+        // 1. SQL: UPDATE Repair SET HandlerID = ?, Status = ? WHERE RepairID = ?
+        // 2. 执行更新并检查受影响行数
+        // 3. 关闭资源并处理异常
     }
 
     /**
@@ -66,6 +90,9 @@ public class RepairDAO {
      */
     public void updateStatus(int repairId, String status) {
         // TODO
+        // 实现说明：
+        // 1. SQL: UPDATE Repair SET Status = ? WHERE RepairID = ?
+        // 2. 执行更新并处理异常
     }
 
     /**
@@ -75,6 +102,10 @@ public class RepairDAO {
      */
     public String selectHandlerIdByRepairId(int repairId) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT HandlerID FROM Repair WHERE RepairID = ?
+        // 2. 执行查询并返回 HandlerID（可能为 null）
+        // 3. 关闭资源并处理异常
         return null;
     }
 }

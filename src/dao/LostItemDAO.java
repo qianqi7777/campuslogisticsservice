@@ -15,5 +15,11 @@ public class LostItemDAO {
      */
     public void insertLostItem(LostItem lostItem) {
         // TODO
+        // 实现说明：
+        // 1. SQL: INSERT INTO LostItem (ItemName, Place, PublishTime, Status, PublisherID) VALUES (?, ?, ?, ?, ?)
+        //    - PublishTime 可使用 CURRENT_TIMESTAMP 或由 Java 端传入
+        // 2. 获取连接并创建 PreparedStatement，设置参数
+        // 3. 执行更新，并在需要时通过 getGeneratedKeys 获取 ItemID
+        // 4. 关闭资源并处理异常
     }
 }

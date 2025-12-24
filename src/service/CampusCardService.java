@@ -25,6 +25,12 @@ public class CampusCardService {
      */
     public void updateStatusToLost(String userId, String userType) {
         // TODO
+        // 实现说明：
+        // 1. 参数校验：userId, userType 非空
+        // 2. 可以先通过 campusCardDAO.selectByUserIdAndType 确认卡存在
+        // 3. 调用 campusCardDAO.updateStatus(userId, userType, "挂失")
+        // 4. 若操作成功，可发送通知或记录日志
+        // 5. 异常处理：捕获 SQLException 并向上抛出业务异常或返回失败信息
     }
 
     /**
@@ -40,5 +46,9 @@ public class CampusCardService {
      */
     public void recoverCard(String cardId) {
         // TODO
+        // 实现说明：
+        // 1. 参数校验：cardId 非空
+        // 2. 调用 campusCardDAO.updateStatusByCardId(cardId, "正常")
+        // 3. 可返回是否成功或抛出异常说明失败原因
     }
 }

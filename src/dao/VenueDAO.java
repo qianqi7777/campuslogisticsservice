@@ -18,6 +18,11 @@ public class VenueDAO {
      */
     public Venue selectById(int venueId) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE VenueID = ?
+        // 2. 获取连接，使用 PreparedStatement 设置参数并执行查询
+        // 3. 如果存在结果，将其映射为 Venue 并返回
+        // 4. 关闭资源并处理 SQLException
         return null;
     }
 
@@ -27,6 +32,10 @@ public class VenueDAO {
      */
     public List<Venue> selectAvailableVenues() {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE IsAvailable = '是' ORDER BY VenueName
+        // 2. 执行查询，遍历 ResultSet，映射为 Venue 并加入返回列表
+        // 3. 关闭资源并返回列表（若无记录返回空列表）
         return new ArrayList<>();
     }
 
@@ -37,5 +46,9 @@ public class VenueDAO {
      */
     public void updateIsAvailable(int venueId, String isAvailable) {
         // TODO
+        // 实现说明：
+        // 1. SQL: UPDATE Venue SET IsAvailable = ? WHERE VenueID = ?
+        // 2. 使用 PreparedStatement 设置参数并执行更新
+        // 3. 处理异常并关闭资源
     }
 }

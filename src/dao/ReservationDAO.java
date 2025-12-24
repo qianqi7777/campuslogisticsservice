@@ -17,6 +17,11 @@ public class ReservationDAO {
      */
     public void insertReservation(Reservation reservation) {
         // TODO
+        // 实现说明：
+        // 1. SQL: INSERT INTO Reservation (VenueID, ReserverID, ResTime, Duration, AuditStatus) VALUES (?, ?, ?, ?, ?)
+        // 2. 获取连接并创建 PreparedStatement，设置参数
+        // 3. 执行更新并可获取生成的主键（ResID）
+        // 4. 关闭资源并处理异常
     }
 
     /**
@@ -26,6 +31,10 @@ public class ReservationDAO {
      */
     public Reservation selectById(int resId) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE ResID = ?
+        // 2. 执行查询并映射结果到 Reservation
+        // 3. 关闭资源并返回
         return null;
     }
 
@@ -36,6 +45,10 @@ public class ReservationDAO {
      */
     public List<Reservation> selectByReserverId(String reserverId) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT * FROM Reservation WHERE ReserverID = ? ORDER BY ResTime DESC
+        // 2. 执行查询并将结果映射到 List<Reservation>
+        // 3. 关闭资源并返回列表
         return new ArrayList<>();
     }
 
@@ -46,5 +59,9 @@ public class ReservationDAO {
      */
     public void updateAuditStatus(int resId, String auditStatus) {
         // TODO
+        // 实现说明：
+        // 1. SQL: UPDATE Reservation SET AuditStatus = ? WHERE ResID = ?
+        // 2. 执行更新并处理受影响行数
+        // 3. 关闭资源并处理异常
     }
 }

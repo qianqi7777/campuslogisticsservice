@@ -50,6 +50,11 @@ public class StaffDAO {
      */
     public Staff selectByEidAndDept(String eid, String dept) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT * FROM Staff WHERE EID = ? AND Dept = ?
+        // 2. 使用 PreparedStatement 设置 eid, dept，并执行查询
+        // 3. 如果查询到则映射为 Staff 并返回，否则返回 null
+        // 4. 关闭资源并处理异常
         return null;
     }
 
@@ -60,6 +65,10 @@ public class StaffDAO {
      */
     public Staff selectByEid(String eid) {
         // TODO
+        // 实现说明：
+        // 1. SQL: SELECT * FROM Staff WHERE EID = ?
+        // 2. 执行查询并映射结果
+        // 3. 关闭资源并返回结果
         return null;
     }
 }
