@@ -14,12 +14,32 @@ public class LostItemDAO {
      * @param lostItem 要插入的 LostItem 对象
      */
     public void insertLostItem(LostItem lostItem) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: INSERT INTO LostItem (ItemName, Place, PublishTime, Status, PublisherID) VALUES (?, ?, ?, ?, ?)
-        //    - PublishTime 可使用 CURRENT_TIMESTAMP 或由 Java 端传入
-        // 2. 获取连接并创建 PreparedStatement，设置参数
-        // 3. 执行更新，并在需要时通过 getGeneratedKeys 获取 ItemID
-        // 4. 关闭资源并处理异常
+        String sql = "INSERT INTO LostItem (ItemName, Place, PublishTime, Status, PublisherID) VALUES (?, ?, ?, ?, ?)";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, lostItem.getItemName());
+            pstmt.setString(2, lostItem.getPlace());
+            if (lostItem.getPublishTime() != null) {
+                pstmt.setTimestamp(3, lostItem.getPublishTime());
+            } else {
+                pstmt.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            }
+            pstmt.setString(4, lostItem.getStatus());
+            pstmt.setString(5, lostItem.getPublisherID());
+            pstmt.executeUpdate();
+            rs = pstmt.getGeneratedKeys();
+            if (rs != null && rs.next()) {
+                lostItem.setItemID(rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("插入失物记录失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
     }
 }

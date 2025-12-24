@@ -2,6 +2,12 @@ package src.service;
 
 import src.dao.StaffDAO;
 import src.entity.Staff;
+import src.util.DBUtil;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * AdminService：管理员业务层
@@ -21,25 +27,44 @@ public class AdminService {
     }
 
     /**
-     * 按学院统计维修数量（统计逻辑为 TODO，可能会调用 RepairDAO/StudentDAO）
+     * 按学院统计维修数量（通过 Repair 与 Student 表联表统计）
      */
     public void statRepairByCollege() {
-        // TODO
-        // 实现说明：
-        // 1. 汇总思路：通过 Repair 表关联 Student 表，按 Student.College 分组统计 Repair 数量
-        // 2. SQL 示例：SELECT s.College, COUNT(r.RepairID) FROM Repair r JOIN Student s ON r.SubmitterID = s.SID GROUP BY s.College
-        // 3. 执行查询并将结果格式化输出或返回数据结构供前端显示
-        // 4. 处理缺失学号或空值的情况
+        String sql = "SELECT s.College, COUNT(r.RepairID) AS cnt " +
+                     "FROM Repair r JOIN Student s ON r.SubmitterID = s.SID " +
+                     "GROUP BY s.College";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            System.out.println("学院\t维修数量");
+            while (rs.next()) {
+                String college = rs.getString("College");
+                int cnt = rs.getInt("cnt");
+                System.out.println(college + "\t" + cnt);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("统计维修数量失败", e);
+        }
     }
 
     /**
      * 统计维修评价（示例：按评分分布统计）
      */
     public void statRepairEvaluation() {
-        // TODO
-        // 实现说明：
-        // 1. 可按评分统计：SELECT Score, COUNT(*) FROM Evaluation GROUP BY Score
-        // 2. 也可结合 Repair 的时间或学院进行细分统计
-        // 3. 执行查询并格式化结果供展示
+        String sql = "SELECT Score, COUNT(*) AS cnt FROM Evaluation GROUP BY Score ORDER BY Score DESC";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            System.out.println("评分\t数量");
+            while (rs.next()) {
+                int score = rs.getInt("Score");
+                int cnt = rs.getInt("cnt");
+                System.out.println(score + "\t" + cnt);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("统计维修评价失败", e);
+        }
     }
 }

@@ -16,12 +16,29 @@ public class ReservationDAO {
      * @param reservation 要插入的 Reservation 对象
      */
     public void insertReservation(Reservation reservation) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: INSERT INTO Reservation (VenueID, ReserverID, ResTime, Duration, AuditStatus) VALUES (?, ?, ?, ?, ?)
-        // 2. 获取连接并创建 PreparedStatement，设置参数
-        // 3. 执行更新并可获取生成的主键（ResID）
-        // 4. 关闭资源并处理异常
+        String sql = "INSERT INTO Reservation (VenueID, ReserverID, ResTime, Duration, AuditStatus) VALUES (?, ?, ?, ?, ?)";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setInt(1, reservation.getVenueID());
+            pstmt.setString(2, reservation.getReserverID());
+            pstmt.setDate(3, reservation.getResTime());
+            pstmt.setInt(4, reservation.getDuration());
+            pstmt.setString(5, reservation.getAuditStatus());
+            pstmt.executeUpdate();
+            rs = pstmt.getGeneratedKeys();
+            if (rs != null && rs.next()) {
+                reservation.setResID(rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("插入预约记录失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
     }
 
     /**
@@ -30,11 +47,30 @@ public class ReservationDAO {
      * @return Reservation 对象或 null
      */
     public Reservation selectById(int resId) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE ResID = ?
-        // 2. 执行查询并映射结果到 Reservation
-        // 3. 关闭资源并返回
+        String sql = "SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE ResID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, resId);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Reservation r = new Reservation();
+                r.setResID(rs.getInt("ResID"));
+                r.setVenueID(rs.getInt("VenueID"));
+                r.setReserverID(rs.getString("ReserverID"));
+                r.setResTime(rs.getDate("ResTime"));
+                r.setDuration(rs.getInt("Duration"));
+                r.setAuditStatus(rs.getString("AuditStatus"));
+                return r;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
         return null;
     }
 
@@ -44,12 +80,32 @@ public class ReservationDAO {
      * @return 预约记录列表
      */
     public List<Reservation> selectByReserverId(String reserverId) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT * FROM Reservation WHERE ReserverID = ? ORDER BY ResTime DESC
-        // 2. 执行查询并将结果映射到 List<Reservation>
-        // 3. 关闭资源并返回列表
-        return new ArrayList<>();
+        List<Reservation> list = new ArrayList<>();
+        String sql = "SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE ReserverID = ? ORDER BY ResTime DESC";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, reserverId);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Reservation r = new Reservation();
+                r.setResID(rs.getInt("ResID"));
+                r.setVenueID(rs.getInt("VenueID"));
+                r.setReserverID(rs.getString("ReserverID"));
+                r.setResTime(rs.getDate("ResTime"));
+                r.setDuration(rs.getInt("Duration"));
+                r.setAuditStatus(rs.getString("AuditStatus"));
+                list.add(r);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 
     /**
@@ -58,10 +114,23 @@ public class ReservationDAO {
      * @param auditStatus 审核状态，如 "通过"、"拒绝"
      */
     public void updateAuditStatus(int resId, String auditStatus) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: UPDATE Reservation SET AuditStatus = ? WHERE ResID = ?
-        // 2. 执行更新并处理受影响行数
-        // 3. 关闭资源并处理异常
+        String sql = "UPDATE Reservation SET AuditStatus = ? WHERE ResID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, auditStatus);
+            pstmt.setInt(2, resId);
+            int updated = pstmt.executeUpdate();
+            if (updated <= 0) {
+                System.out.println("updateAuditStatus: 没有找到匹配的预约记录 (resId=" + resId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新预约审核状态失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 }

@@ -49,12 +49,26 @@ public class StaffDAO {
      * @return Staff 或 null
      */
     public Staff selectByEidAndDept(String eid, String dept) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT * FROM Staff WHERE EID = ? AND Dept = ?
-        // 2. 使用 PreparedStatement 设置 eid, dept，并执行查询
-        // 3. 如果查询到则映射为 Staff 并返回，否则返回 null
-        // 4. 关闭资源并处理异常
+        String sql = "SELECT * FROM Staff WHERE EID = ? AND Dept = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, eid);
+            pstmt.setString(2, dept);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Staff(
+                        rs.getString("EID"),
+                        rs.getString("EName"),
+                        rs.getString("Dept"),
+                        rs.getString("Phone"),
+                        rs.getString("Position"),
+                        rs.getString("Password")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -64,11 +78,25 @@ public class StaffDAO {
      * @return Staff 或 null
      */
     public Staff selectByEid(String eid) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT * FROM Staff WHERE EID = ?
-        // 2. 执行查询并映射结果
-        // 3. 关闭资源并返回结果
+        String sql = "SELECT * FROM Staff WHERE EID = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, eid);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Staff(
+                        rs.getString("EID"),
+                        rs.getString("EName"),
+                        rs.getString("Dept"),
+                        rs.getString("Phone"),
+                        rs.getString("Position"),
+                        rs.getString("Password")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }

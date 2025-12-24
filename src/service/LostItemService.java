@@ -15,11 +15,15 @@ public class LostItemService {
      * @param lostItem 要发布的失物实体
      */
     public void addLostItem(LostItem lostItem) {
-        // TODO
-        // 实现说明：
-        // 1. 参数校验：检查 itemName, place, publisherID 非空
-        // 2. 设置默认状态（如 "未认领"）和发布时间（若由数据库处理可省略）
-        // 3. 调用 lostItemDAO.insertLostItem(lostItem)
-        // 4. 关闭/处理异常并可返回插入成功与否
+        if (lostItem == null
+            || lostItem.getItemName() == null || lostItem.getItemName().trim().isEmpty()
+            || lostItem.getPlace() == null || lostItem.getPlace().trim().isEmpty()
+            || lostItem.getPublisherID() == null || lostItem.getPublisherID().trim().isEmpty()) {
+            throw new IllegalArgumentException("失物信息不完整");
+        }
+        if (lostItem.getStatus() == null) {
+            lostItem.setStatus("未认领");
+        }
+        lostItemDAO.insertLostItem(lostItem);
     }
 }

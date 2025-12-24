@@ -16,13 +16,27 @@ public class EvaluationDAO {
      * @param evaluation 要插入的 Evaluation 实体
      */
     public void insertEvaluation(Evaluation evaluation) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: INSERT INTO Evaluation (RepairID, Score, Comment) VALUES (?, ?, ?)
-        // 2. 获取连接，创建 PreparedStatement，并设置参数 evaluation.getRepairID(), evaluation.getScore(), evaluation.getComment()
-        // 3. 执行更新 pstmt.executeUpdate()
-        // 4. 如使用自增主键，可通过 getGeneratedKeys 获取 evalID 并设置回 evaluation
-        // 5. 关闭资源并处理 SQL 异常
+        String sql = "INSERT INTO Evaluation (RepairID, Score, Comment) VALUES (?, ?, ?)";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setInt(1, evaluation.getRepairID());
+            pstmt.setInt(2, evaluation.getScore());
+            pstmt.setString(3, evaluation.getComment());
+            pstmt.executeUpdate();
+            rs = pstmt.getGeneratedKeys();
+            if (rs != null && rs.next()) {
+                evaluation.setEvalID(rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("插入评价记录失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
     }
 
     /**
@@ -30,11 +44,28 @@ public class EvaluationDAO {
      * @return 评价列表（可能为空）
      */
     public List<Evaluation> selectAll() {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT EvalID, RepairID, Score, Comment FROM Evaluation ORDER BY EvalID DESC
-        // 2. 获取连接，执行查询，遍历 ResultSet，将每行封装为 Evaluation 并加入列表
-        // 3. 关闭资源并返回列表
-        return new ArrayList<>();
+        List<Evaluation> list = new ArrayList<>();
+        String sql = "SELECT EvalID, RepairID, Score, Comment FROM Evaluation ORDER BY EvalID DESC";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Evaluation e = new Evaluation();
+                e.setEvalID(rs.getInt("EvalID"));
+                e.setRepairID(rs.getInt("RepairID"));
+                e.setScore(rs.getInt("Score"));
+                e.setComment(rs.getString("Comment"));
+                list.add(e);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 }

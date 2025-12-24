@@ -3,6 +3,7 @@ package src.service;
 import src.dao.EvaluationDAO;
 import src.dao.RepairDAO;
 import src.entity.Evaluation;
+import src.entity.Repair;
 
 /**
  * EvaluationService：评价业务层
@@ -18,12 +19,22 @@ public class EvaluationService {
      * @param submitterId 提交评价的学生学号（用于校验）
      */
     public void addEvaluation(Evaluation evaluation, String submitterId) {
-        // TODO
-        // 实现说明：
-        // 1. 参数校验：检查 evaluation.getRepairID()、score 等是否有效
-        // 2. 校验维修单归属：可以通过 repairDAO.selectById(repairId) 并检查 submitterID 是否与传入 submitterId 匹配（防止越权评价）
-        // 3. 插入评价：调用 evaluationDAO.insertEvaluation(evaluation)
-        // 4. 可选：更新 Repair 表的状态或标记该单已评价（例如 updateStatus 或新增字段）
-        // 5. 异常处理与日志记录
+        if (evaluation == null || evaluation.getRepairID() <= 0) {
+            throw new IllegalArgumentException("评价信息不完整");
+        }
+        if (evaluation.getScore() < 0) {
+            throw new IllegalArgumentException("评分不合法");
+        }
+        // 校验维修单归属（可选）
+        Repair r = repairDAO.selectById(evaluation.getRepairID());
+        if (r == null) {
+            throw new RuntimeException("对应的维修单不存在");
+        }
+        // 如需校验 submitterId 与维修单的 submitter 匹配，可启用以下校验
+        if (submitterId != null && r.getSubmitterID() != null && !submitterId.equals(r.getSubmitterID())) {
+            throw new RuntimeException("无权对该维修单进行评价");
+        }
+
+        evaluationDAO.insertEvaluation(evaluation);
     }
 }

@@ -16,14 +16,33 @@ public class RepairDAO {
      * @param repair 要插入的 Repair 实体
      */
     public void insertRepair(Repair repair) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: INSERT INTO Repair (Content, SubmitTime, Status, SubmitterID, HandlerID) VALUES (?, ?, ?, ?, ?)
-        //    - SubmitTime 可使用 CURRENT_TIMESTAMP 或由 Java 端传入
-        //    - HandlerID 在提交时通常为空
-        // 2. 使用 PreparedStatement 设置参数并执行更新
-        // 3. 可通过 getGeneratedKeys 获取 RepairID 并设置回 repair
-        // 4. 关闭资源并处理异常
+        String sql = "INSERT INTO Repair (Content, SubmitTime, Status, SubmitterID, HandlerID) VALUES (?, ?, ?, ?, ?)";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, repair.getContent());
+            if (repair.getSubmitTime() != null) {
+                pstmt.setTimestamp(2, repair.getSubmitTime());
+            } else {
+                pstmt.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            }
+            pstmt.setString(3, repair.getStatus());
+            pstmt.setString(4, repair.getSubmitterID());
+            pstmt.setString(5, repair.getHandlerID());
+            pstmt.executeUpdate();
+            rs = pstmt.getGeneratedKeys();
+            if (rs != null && rs.next()) {
+                repair.setRepairID(rs.getInt(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("插入维修记录失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
     }
 
     /**
@@ -32,11 +51,30 @@ public class RepairDAO {
      * @return Repair 对象或 null
      */
     public Repair selectById(int repairId) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE RepairID = ?
-        // 2. 执行查询并将结果映射到 Repair 对象
-        // 3. 关闭资源并返回 Repair 或 null
+        String sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE RepairID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, repairId);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Repair r = new Repair();
+                r.setRepairID(rs.getInt("RepairID"));
+                r.setContent(rs.getString("Content"));
+                r.setSubmitTime(rs.getTimestamp("SubmitTime"));
+                r.setStatus(rs.getString("Status"));
+                r.setSubmitterID(rs.getString("SubmitterID"));
+                r.setHandlerID(rs.getString("HandlerID"));
+                return r;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
         return null;
     }
 
@@ -47,13 +85,38 @@ public class RepairDAO {
      * @return Repair 列表
      */
     public List<Repair> selectBySubmitterIdAndStatus(String submitterId, String status) {
-        // TODO
-        // 实现说明：
-        // 1. 如果 status 为 null，SQL: SELECT * FROM Repair WHERE SubmitterID = ? ORDER BY SubmitTime DESC
-        //    否则 SQL: SELECT * FROM Repair WHERE SubmitterID = ? AND Status = ? ORDER BY SubmitTime DESC
-        // 2. 执行查询并将每行映射为 Repair 加入列表
-        // 3. 关闭资源并返回列表
-        return new ArrayList<>();
+        List<Repair> list = new ArrayList<>();
+        String sql;
+        if (status == null) {
+            sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE SubmitterID = ? ORDER BY SubmitTime DESC";
+        } else {
+            sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE SubmitterID = ? AND Status = ? ORDER BY SubmitTime DESC";
+        }
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, submitterId);
+            if (status != null) pstmt.setString(2, status);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Repair r = new Repair();
+                r.setRepairID(rs.getInt("RepairID"));
+                r.setContent(rs.getString("Content"));
+                r.setSubmitTime(rs.getTimestamp("SubmitTime"));
+                r.setStatus(rs.getString("Status"));
+                r.setSubmitterID(rs.getString("SubmitterID"));
+                r.setHandlerID(rs.getString("HandlerID"));
+                list.add(r);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 
     /**
@@ -61,12 +124,31 @@ public class RepairDAO {
      * @return Repair 列表
      */
     public List<Repair> selectAll() {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair ORDER BY SubmitTime DESC
-        // 2. 执行查询并映射结果集到列表
-        // 3. 关闭资源并返回
-        return new ArrayList<>();
+        List<Repair> list = new ArrayList<>();
+        String sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair ORDER BY SubmitTime DESC";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Repair r = new Repair();
+                r.setRepairID(rs.getInt("RepairID"));
+                r.setContent(rs.getString("Content"));
+                r.setSubmitTime(rs.getTimestamp("SubmitTime"));
+                r.setStatus(rs.getString("Status"));
+                r.setSubmitterID(rs.getString("SubmitterID"));
+                r.setHandlerID(rs.getString("HandlerID"));
+                list.add(r);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 
     /**
@@ -76,11 +158,25 @@ public class RepairDAO {
      * @param status 新状态
      */
     public void updateHandlerAndStatus(int repairId, String handlerId, String status) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: UPDATE Repair SET HandlerID = ?, Status = ? WHERE RepairID = ?
-        // 2. 执行更新并检查受影响行数
-        // 3. 关闭资源并处理异常
+        String sql = "UPDATE Repair SET HandlerID = ?, Status = ? WHERE RepairID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, handlerId);
+            pstmt.setString(2, status);
+            pstmt.setInt(3, repairId);
+            int updated = pstmt.executeUpdate();
+            if (updated <= 0) {
+                System.out.println("updateHandlerAndStatus: 没有找到匹配的维修记录 (repairId=" + repairId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新维修处理人和状态失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -89,10 +185,24 @@ public class RepairDAO {
      * @param status 要设置的状态
      */
     public void updateStatus(int repairId, String status) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: UPDATE Repair SET Status = ? WHERE RepairID = ?
-        // 2. 执行更新并处理异常
+        String sql = "UPDATE Repair SET Status = ? WHERE RepairID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, status);
+            pstmt.setInt(2, repairId);
+            int updated = pstmt.executeUpdate();
+            if (updated <= 0) {
+                System.out.println("updateStatus: 没有找到匹配的维修记录 (repairId=" + repairId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新维修状态失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -101,11 +211,23 @@ public class RepairDAO {
      * @return 处理人工号字符串或 null
      */
     public String selectHandlerIdByRepairId(int repairId) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT HandlerID FROM Repair WHERE RepairID = ?
-        // 2. 执行查询并返回 HandlerID（可能为 null）
-        // 3. 关闭资源并处理异常
+        String sql = "SELECT HandlerID FROM Repair WHERE RepairID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, repairId);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("HandlerID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
         return null;
     }
 }

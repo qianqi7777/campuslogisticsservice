@@ -17,12 +17,29 @@ public class VenueDAO {
      * @return Venue 对象或 null
      */
     public Venue selectById(int venueId) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE VenueID = ?
-        // 2. 获取连接，使用 PreparedStatement 设置参数并执行查询
-        // 3. 如果存在结果，将其映射为 Venue 并返回
-        // 4. 关闭资源并处理 SQLException
+        String sql = "SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE VenueID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, venueId);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Venue v = new Venue();
+                v.setVenueID(rs.getInt("VenueID"));
+                v.setVenueName(rs.getString("VenueName"));
+                v.setCapacity(rs.getInt("Capacity"));
+                v.setLocation(rs.getString("Location"));
+                v.setIsAvailable(rs.getString("IsAvailable"));
+                return v;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
         return null;
     }
 
@@ -31,12 +48,30 @@ public class VenueDAO {
      * @return 可用场馆列表
      */
     public List<Venue> selectAvailableVenues() {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE IsAvailable = '是' ORDER BY VenueName
-        // 2. 执行查询，遍历 ResultSet，映射为 Venue 并加入返回列表
-        // 3. 关闭资源并返回列表（若无记录返回空列表）
-        return new ArrayList<>();
+        List<Venue> list = new ArrayList<>();
+        String sql = "SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE IsAvailable = '是' ORDER BY VenueName";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Venue v = new Venue();
+                v.setVenueID(rs.getInt("VenueID"));
+                v.setVenueName(rs.getString("VenueName"));
+                v.setCapacity(rs.getInt("Capacity"));
+                v.setLocation(rs.getString("Location"));
+                v.setIsAvailable(rs.getString("IsAvailable"));
+                list.add(v);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 
     /**
@@ -45,10 +80,23 @@ public class VenueDAO {
      * @param isAvailable "是" 或 "否"
      */
     public void updateIsAvailable(int venueId, String isAvailable) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: UPDATE Venue SET IsAvailable = ? WHERE VenueID = ?
-        // 2. 使用 PreparedStatement 设置参数并执行更新
-        // 3. 处理异常并关闭资源
+        String sql = "UPDATE Venue SET IsAvailable = ? WHERE VenueID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, isAvailable);
+            pstmt.setInt(2, venueId);
+            int updated = pstmt.executeUpdate();
+            if (updated <= 0) {
+                System.out.println("updateIsAvailable: 没有找到匹配的场馆记录 (venueId=" + venueId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新场馆可用状态失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 }

@@ -18,15 +18,31 @@ public class CampusCardDAO {
      * @return CampusCard 若存在则返回对应 CampusCard 对象，否则返回 null
      */
     public CampusCard selectByUserIdAndType(String userId, String userType) {
-        // TODO
-        // 实现说明（注释）：
-        // 1. 准备 SQL：SELECT * FROM CampusCard WHERE UserID = ? AND UserType = ?
-        // 2. 获取数据库连接：Connection conn = DBUtil.getConnection()
-        // 3. 使用 PreparedStatement 设置参数 userId, userType
-        // 4. 执行查询 pstmt.executeQuery()
-        // 5. 如果存在记录，构建并返回 CampusCard 实体（映射各列到实体字段）
-        // 6. 关闭 ResultSet/PreparedStatement/Connection（或使用 DBUtil.close）
-        // 7. 在 catch 块中处理 SQLException 并返回 null 或抛出运行期异常
+        String sql = "SELECT CardID, UserID, UserType, Balance, Status, CreateTime FROM CampusCard WHERE UserID = ? AND UserType = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, userId);
+            pstmt.setString(2, userType);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                CampusCard card = new CampusCard();
+                card.setCardID(rs.getString("CardID"));
+                card.setUserID(rs.getString("UserID"));
+                card.setUserType(rs.getString("UserType"));
+                card.setBalance(rs.getBigDecimal("Balance"));
+                card.setStatus(rs.getString("Status"));
+                card.setCreateTime(rs.getTimestamp("CreateTime"));
+                return card;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
         return null;
     }
 
@@ -37,13 +53,26 @@ public class CampusCardDAO {
      * @param status 要设置的状态字符串
      */
     public void updateStatus(String userId, String userType, String status) {
-        // TODO
-        // 实现说明（注释）：
-        // 1. SQL: UPDATE CampusCard SET Status = ? WHERE UserID = ? AND UserType = ?
-        // 2. 获取连接并使用 PreparedStatement 设置参数(status, userId, userType)
-        // 3. 执行更新 pstmt.executeUpdate()
-        // 4. 处理返回的更新计数（可选），用于判断是否成功更新
-        // 5. 关闭资源并在异常情况下记录/抛出异常
+        String sql = "UPDATE CampusCard SET Status = ? WHERE UserID = ? AND UserType = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, status);
+            pstmt.setString(2, userId);
+            pstmt.setString(3, userType);
+            int updated = pstmt.executeUpdate();
+            // 可选：打印更新结果
+            if (updated <= 0) {
+                System.out.println("updateStatus: 没有找到匹配的校园卡记录 (userId=" + userId + ", userType=" + userType + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新校园卡状态失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -52,12 +81,30 @@ public class CampusCardDAO {
      * @return CampusCard 对象或 null
      */
     public CampusCard selectByCardId(String cardId) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT * FROM CampusCard WHERE CardID = ?
-        // 2. 获取连接、创建 PreparedStatement，设置 cardId
-        // 3. 执行查询并映射结果到 CampusCard
-        // 4. 关闭资源并返回 CampusCard 或 null
+        String sql = "SELECT CardID, UserID, UserType, Balance, Status, CreateTime FROM CampusCard WHERE CardID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, cardId);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                CampusCard card = new CampusCard();
+                card.setCardID(rs.getString("CardID"));
+                card.setUserID(rs.getString("UserID"));
+                card.setUserType(rs.getString("UserType"));
+                card.setBalance(rs.getBigDecimal("Balance"));
+                card.setStatus(rs.getString("Status"));
+                card.setCreateTime(rs.getTimestamp("CreateTime"));
+                return card;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
         return null;
     }
 
@@ -67,11 +114,24 @@ public class CampusCardDAO {
      * @param status 新状态
      */
     public void updateStatusByCardId(String cardId, String status) {
-        // TODO
-        // 实现说明：
-        // 1. SQL: UPDATE CampusCard SET Status = ? WHERE CardID = ?
-        // 2. 获取连接、设置参数并执行更新
-        // 3. 处理异常并关闭资源
+        String sql = "UPDATE CampusCard SET Status = ? WHERE CardID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, status);
+            pstmt.setString(2, cardId);
+            int updated = pstmt.executeUpdate();
+            if (updated <= 0) {
+                System.out.println("updateStatusByCardId: 没有找到匹配的校园卡记录 (cardId=" + cardId + ")");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("按卡号更新校园卡状态失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -79,11 +139,30 @@ public class CampusCardDAO {
      * @return CampusCard 列表
      */
     public List<CampusCard> selectLostCards() {
-        // TODO
-        // 实现说明：
-        // 1. SQL: SELECT * FROM CampusCard WHERE Status IN ('挂失','丢失')
-        // 2. 执行查询，循环 ResultSet，将每行映射为 CampusCard 并添加到列表
-        // 3. 关闭资源并返回列表（如果没有记录返回空列表而非 null）
-        return new ArrayList<>();
+        List<CampusCard> list = new ArrayList<>();
+        String sql = "SELECT CardID, UserID, UserType, Balance, Status, CreateTime FROM CampusCard WHERE Status IN ('挂失','丢失')";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                CampusCard card = new CampusCard();
+                card.setCardID(rs.getString("CardID"));
+                card.setUserID(rs.getString("UserID"));
+                card.setUserType(rs.getString("UserType"));
+                card.setBalance(rs.getBigDecimal("Balance"));
+                card.setStatus(rs.getString("Status"));
+                card.setCreateTime(rs.getTimestamp("CreateTime"));
+                list.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 }

@@ -48,11 +48,6 @@ public class StudentDAO {
      * @return 学院名称或 null
      */
     public String selectCollegeBySid(String sid) {
-        // TODO: 实现查询学院的逻辑
-        // 实现说明：
-        // 1. SQL: SELECT College FROM Student WHERE SID = ?
-        // 2. 执行查询并返回查询到的 College 字段
-        // 3. 关闭资源并处理异常
         String sql = "SELECT College FROM Student WHERE SID = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
