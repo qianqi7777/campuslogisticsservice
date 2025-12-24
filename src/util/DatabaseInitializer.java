@@ -4,15 +4,23 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
+/**
+ * 数据库初始化工具类
+ * 用于在程序启动时检查并创建数据库及相关表结构
+ */
 public class DatabaseInitializer {
 
+    /**
+     * 初始化数据库
+     * 检查数据库是否存在，不存在则创建，并创建所有必要的表
+     */
     public static void initDatabase() {
         System.out.println("正在检查并初始化数据库...");
         String targetDb = "CampusServiceDB";
         String fullUrl = DBUtil.getDbUrl();
-        // 提取基础 URL (去掉数据库名)
+        // 提取基础 URL (去掉数据库名)，以便连接到 MySQL 服务而不是特定数据库
         String baseUrl = fullUrl.substring(0, fullUrl.indexOf("/", 13)); // jdbc:mysql://host:port
-        // 处理参数
+        // 处理参数，保留 URL 参数
         if (fullUrl.contains("?")) {
              baseUrl += fullUrl.substring(fullUrl.indexOf("?"));
         }
@@ -24,12 +32,14 @@ public class DatabaseInitializer {
              Statement stmt = conn.createStatement()) {
 
             // 1. 创建数据库
+            // 如果数据库不存在，则创建，指定字符集为 utf8mb4
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + targetDb + " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
             System.out.println("数据库 " + targetDb + " 检查/创建完成。");
 
             // 2. 切换到该数据库并创建表
             stmt.executeUpdate("USE " + targetDb);
 
+            // 调用创建表的方法
             createTables(stmt);
 
             System.out.println("数据库表初始化完成。");
@@ -40,8 +50,13 @@ public class DatabaseInitializer {
         }
     }
 
+    /**
+     * 创建所有数据表
+     * @param stmt Statement 对象
+     * @throws Exception 创建过程中可能抛出的异常
+     */
     private static void createTables(Statement stmt) throws Exception {
-        // Student
+        // Student 表：存储学生信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Student (" +
                 "SID CHAR(10) PRIMARY KEY COMMENT '学号'," +
                 "SName VARCHAR(20) NOT NULL COMMENT '学生姓名'," +
@@ -51,7 +66,7 @@ public class DatabaseInitializer {
                 "Password VARCHAR(20) DEFAULT '123456' COMMENT '默认登录密码'" +
                 ") COMMENT '学生信息表'");
 
-        // Staff
+        // Staff 表：存储教职工信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Staff (" +
                 "EID CHAR(8) PRIMARY KEY COMMENT '工号'," +
                 "EName VARCHAR(20) NOT NULL COMMENT '教职工姓名'," +
@@ -61,7 +76,7 @@ public class DatabaseInitializer {
                 "Password VARCHAR(20) DEFAULT 'admin123' COMMENT '默认登录密码'" +
                 ") COMMENT '教职工信息表'");
 
-        // Repair
+        // Repair 表：存储维修申请信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Repair (" +
                 "RepairID INT PRIMARY KEY AUTO_INCREMENT COMMENT '维修单ID'," +
                 "Content VARCHAR(200) NOT NULL COMMENT '维修内容'," +
@@ -73,7 +88,7 @@ public class DatabaseInitializer {
                 "FOREIGN KEY (HandlerID) REFERENCES Staff(EID) ON DELETE SET NULL" +
                 ") COMMENT '维修申请表'");
 
-        // Evaluation
+        // Evaluation 表：存储维修评价信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Evaluation (" +
                 "EvalID INT PRIMARY KEY AUTO_INCREMENT COMMENT '评价ID'," +
                 "RepairID INT NOT NULL COMMENT '关联维修单ID'," +
@@ -82,7 +97,7 @@ public class DatabaseInitializer {
                 "FOREIGN KEY (RepairID) REFERENCES Repair(RepairID) ON DELETE CASCADE" +
                 ") COMMENT '维修评价表'");
 
-        // LostItem
+        // LostItem 表：存储失物招领信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS LostItem (" +
                 "ItemID INT PRIMARY KEY AUTO_INCREMENT COMMENT '物品ID'," +
                 "ItemName VARCHAR(50) NOT NULL COMMENT '物品名称'," +
@@ -93,7 +108,7 @@ public class DatabaseInitializer {
                 "FOREIGN KEY (PublisherID) REFERENCES Student(SID) ON DELETE SET NULL" +
                 ") COMMENT '失物招领表'");
 
-        // Venue
+        // Venue 表：存储场馆信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Venue (" +
                 "VenueID INT PRIMARY KEY AUTO_INCREMENT COMMENT '场馆ID'," +
                 "VenueName VARCHAR(30) NOT NULL COMMENT '场馆名称'," +
@@ -102,7 +117,7 @@ public class DatabaseInitializer {
                 "IsAvailable VARCHAR(2) NOT NULL DEFAULT '是' COMMENT '是否可用'" +
                 ") COMMENT '场馆信息表'");
 
-        // Reservation
+        // Reservation 表：存储场馆预约信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Reservation (" +
                 "ResID INT PRIMARY KEY AUTO_INCREMENT COMMENT '预约ID'," +
                 "VenueID INT NOT NULL COMMENT '关联场馆ID'," +
@@ -114,9 +129,7 @@ public class DatabaseInitializer {
                 "FOREIGN KEY (ReserverID) REFERENCES Student(SID) ON DELETE SET NULL" +
                 ") COMMENT '场馆预约表'");
 
-        // CampusCard
-        // 注意：MySQL 8.0 以下可能不支持 CHECK 约束，但语法通常兼容。
-        // 复杂的 CHECK 约束在某些 MySQL 版本中可能被忽略，这里保留 SQL 逻辑。
+        // CampusCard 表：存储校园卡信息
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS CampusCard (" +
                 "CardID CHAR(12) PRIMARY KEY COMMENT '校园卡ID'," +
                 "UserID VARCHAR(10) NOT NULL COMMENT '关联用户ID'," +

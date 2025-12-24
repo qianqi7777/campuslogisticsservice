@@ -3,6 +3,10 @@ package src.view;
 import src.entity.Student;
 import java.util.Scanner;
 
+/**
+ * 学生控制台视图：StudentView
+ * 提供学生用户可以执行的操作菜单（当前为占位示例）
+ */
 public class StudentView {
     private Student student;
     private Scanner scanner = new Scanner(System.in);
@@ -11,6 +15,9 @@ public class StudentView {
         this.student = student;
     }
 
+    /**
+     * 显示学生主菜单并响应输入（实际功能由 Service 层实现并在此调用）
+     */
     public void show() {
         while (true) {
             System.out.println("\n=== 学生主菜单 (" + student.getSName() + ") ===");
@@ -27,7 +34,7 @@ public class StudentView {
             String choice = scanner.nextLine();
             if ("0".equals(choice)) return;
 
-            System.out.println("功能 [" + choice + "] 尚未实现具体逻辑。");
+            System.out.println("功能 [" + choice + "] 尚未实现具体逻辑，仅为示例菜单。");
         }
     }
 }

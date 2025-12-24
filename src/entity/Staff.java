@@ -1,5 +1,16 @@
 package src.entity;
 
+/**
+ * Staff 实体类
+ * 对应数据库中的 Staff 表，用于表示教职工/管理员账号信息
+ * 字段说明：
+ *  - eid: 工号（主键）
+ *  - eName: 姓名
+ *  - dept: 所属部门
+ *  - phone: 手机号
+ *  - position: 职位
+ *  - password: 登录密码（项目示例中以明文存储，不建议在生产环境中如此）
+ */
 public class Staff {
     private String eid;
     private String eName;
@@ -19,6 +30,7 @@ public class Staff {
         this.password = password;
     }
 
+    // getter / setter
     public String getEid() { return eid; }
     public void setEid(String eid) { this.eid = eid; }
 

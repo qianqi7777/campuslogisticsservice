@@ -2,6 +2,17 @@ package src.entity;
 
 import java.sql.Timestamp;
 
+/**
+ * LostItem 实体类
+ * 对应数据库中的 LostItem 表，用于表示失物招领的记录
+ * 字段说明：
+ *  - itemID: 物品 ID（主键，自增）
+ *  - itemName: 物品名称
+ *  - place: 丢失或捡到的地点
+ *  - publishTime: 发布时间
+ *  - status: 状态（如 未认领/已认领）
+ *  - publisherID: 发布人学号
+ */
 public class LostItem {
     private int itemID;
     private String itemName;
@@ -12,6 +23,7 @@ public class LostItem {
 
     public LostItem() {}
 
+    // getter / setter
     public int getItemID() { return itemID; }
     public void setItemID(int itemID) { this.itemID = itemID; }
 

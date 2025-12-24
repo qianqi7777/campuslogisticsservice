@@ -7,7 +7,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * StaffDAO：教职工（管理员）相关的数据访问对象
+ * 提供按工号和密码查询、按工号查询等方法
+ */
 public class StaffDAO {
+    /**
+     * 根据工号和密码查询教职工记录（用于登录验证）
+     * @param eid 工号
+     * @param password 密码
+     * @return Staff 对象或 null
+     */
     public Staff selectByEidAndPwd(String eid, String password) {
         String sql = "SELECT * FROM Staff WHERE EID = ? AND Password = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -32,11 +42,22 @@ public class StaffDAO {
         return null;
     }
 
+    /**
+     * 根据工号和部门查询教职工（可用于按部门限制登陆或查找）
+     * @param eid 工号
+     * @param dept 部门
+     * @return Staff 或 null
+     */
     public Staff selectByEidAndDept(String eid, String dept) {
         // TODO
         return null;
     }
 
+    /**
+     * 根据工号查询教职工信息
+     * @param eid 工号
+     * @return Staff 或 null
+     */
     public Staff selectByEid(String eid) {
         // TODO
         return null;

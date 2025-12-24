@@ -1,5 +1,16 @@
 package src.entity;
 
+/**
+ * Student 实体类
+ * 对应数据库中的 Student 表，用于表示学生账户与基本信息
+ * 字段说明：
+ *  - sid: 学号（主键）
+ *  - sName: 学生姓名
+ *  - college: 所属学院
+ *  - phone: 手机号
+ *  - grade: 年级
+ *  - password: 登录密码（示例中明文存储，不建议用于真实系统）
+ */
 public class Student {
     private String sid;
     private String sName;
@@ -19,6 +30,7 @@ public class Student {
         this.password = password;
     }
 
+    // getter / setter
     public String getSid() { return sid; }
     public void setSid(String sid) { this.sid = sid; }
 

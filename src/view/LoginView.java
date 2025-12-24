@@ -6,18 +6,25 @@ import src.service.AdminService;
 import src.entity.Student;
 import src.entity.Staff;
 
+/**
+ * 登录视图：命令行交互的登录界面
+ * 提供学生与管理员两种身份的登录入口，登录成功后跳转到对应视图
+ */
 public class LoginView {
     private Scanner scanner = new Scanner(System.in);
     private StudentService studentService = new StudentService();
     private AdminService adminService = new AdminService();
 
+    /**
+     * 显示登录主界面并处理用户选择
+     */
     public void show() {
         while (true) {
             System.out.println("\n=== 登录界面 ===");
             System.out.println("1. 学生登录");
             System.out.println("2. 管理员登录");
             System.out.println("0. 退出系统");
-            System.out.print("请选择：");
+            System.out.print("请 选择：");
 
             String choice = scanner.nextLine();
             switch (choice) {
@@ -36,6 +43,9 @@ public class LoginView {
         }
     }
 
+    /**
+     * 学生登录流程：读取学号与密码并调用 StudentService 验证
+     */
     private void loginStudent() {
         System.out.print("请输入学号：");
         String sid = scanner.nextLine();
@@ -51,6 +61,9 @@ public class LoginView {
         }
     }
 
+    /**
+     * 管理员登录流程：读取工号与密码并调用 AdminService 验证
+     */
     private void loginAdmin() {
         System.out.print("请输入工号：");
         String eid = scanner.nextLine();
