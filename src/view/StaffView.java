@@ -49,22 +49,23 @@ public class StaffView {
         System.out.println("2. 更新维修状态");
         System.out.println("3. 查看评价");
         System.out.println("0. 返回");
-        // TODO: 调用 RepairService
+        // TODO: 读取输入并调用 RepairService
     }
 
     private void showReservationMenu() {
         System.out.println("\n--- 预约服务 ---");
-        // TODO: 职工预约相关功能
-        System.out.println("功能开发中...");
+        System.out.println("1. 管理场馆信息");
+        System.out.println("2. 预约场馆");
+        System.out.println("0. 返回");
+        // TODO: 读取输入并调用 ReservationService / VenueService
     }
 
     private void showCardMenu() {
         System.out.println("\n--- 校园卡服务 ---");
-        System.out.println("1. 账户查询");
+        System.out.println("1. 查询余额");
         System.out.println("2. 充值");
         System.out.println("3. 挂失");
         System.out.println("0. 返回");
-        // TODO: 调用 CampusCardService
+        // TODO: 读取输入并调用 CampusCardService
     }
 }
-

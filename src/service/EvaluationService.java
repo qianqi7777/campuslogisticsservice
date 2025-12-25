@@ -39,4 +39,14 @@ public class EvaluationService {
         // 插入评价记录
         evaluationDAO.insertEvaluation(evaluation);
     }
+
+    /**
+     * 根据维修单ID获取评价
+     * @param repairId 维修单ID
+     * @return Evaluation 对象
+     */
+    public Evaluation getEvaluationByRepairId(int repairId) {
+        // TODO: 调用 DAO 查询
+        return evaluationDAO.selectByRepairId(repairId);
+    }
 }

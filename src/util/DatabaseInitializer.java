@@ -109,19 +109,6 @@ public class DatabaseInitializer {
                 "FOREIGN KEY (RepairID) REFERENCES Repair(RepairID) ON DELETE CASCADE" +
                 ") COMMENT '维修评价表'");
 
-        // LostItem 表：存储失物招领信息
-        // 包含物品ID、名称、地点、发布时间、状态、发布人等字段
-        // 外键关联 Student(SID)
-        stmt.executeUpdate("CREATE TABLE IF NOT EXISTS LostItem (" +
-                "ItemID INT PRIMARY KEY AUTO_INCREMENT COMMENT '物品ID'," +
-                "ItemName VARCHAR(50) NOT NULL COMMENT '物品名称'," +
-                "Place VARCHAR(50) NOT NULL COMMENT '丢失/捡拾地点'," +
-                "PublishTime DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间'," +
-                "Status VARCHAR(10) NOT NULL DEFAULT '未认领' COMMENT '状态'," +
-                "PublisherID CHAR(10) COMMENT '发布人学号'," +
-                "FOREIGN KEY (PublisherID) REFERENCES Student(SID) ON DELETE SET NULL" +
-                ") COMMENT '失物招领表'");
-
         // Venue 表：存储场馆信息
         // 包含场馆ID、名称、容量、位置、是否可用等字段
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Venue (" +
@@ -134,16 +121,16 @@ public class DatabaseInitializer {
 
         // Reservation 表：存储场馆预约信息
         // 包含预约ID、关联场馆ID、预约人、时间、时长、审核状态等字段
-        // 外键关联 Venue(VenueID) 和 Student(SID)
+        // 外键关联 Venue(VenueID)
+        // 注意：ReserverID 可以是 Student(SID) 或 Staff(EID)，因此不设置硬性外键约束，由逻辑控制
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Reservation (" +
                 "ResID INT PRIMARY KEY AUTO_INCREMENT COMMENT '预约ID'," +
                 "VenueID INT NOT NULL COMMENT '关联场馆ID'," +
-                "ReserverID CHAR(10) COMMENT '预约人学号'," +
+                "ReserverID VARCHAR(20) COMMENT '预约人ID（学号或工号）'," +
                 "ResTime DATE NOT NULL COMMENT '预约日期'," +
                 "Duration INT NOT NULL COMMENT '使用时长' CHECK(Duration>0)," +
                 "AuditStatus VARCHAR(10) NOT NULL DEFAULT '待审核' COMMENT '审核状态'," +
-                "FOREIGN KEY (VenueID) REFERENCES Venue(VenueID) ON DELETE CASCADE," +
-                "FOREIGN KEY (ReserverID) REFERENCES Student(SID) ON DELETE SET NULL" +
+                "FOREIGN KEY (VenueID) REFERENCES Venue(VenueID) ON DELETE CASCADE" +
                 ") COMMENT '场馆预约表'");
 
         // CampusCard 表：存储校园卡信息

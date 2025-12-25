@@ -31,6 +31,16 @@ public class RepairService {
         // TODO: 调用 EvaluationDAO 插入评价
     }
 
+    /**
+     * 获取学生提交的维修单 (学生)
+     * @param studentId 学生学号
+     * @return 维修单列表
+     */
+    public List<Repair> getRepairsByStudent(String studentId) {
+        // TODO: 调用 DAO 查询
+        return null;
+    }
+
     // --- 职工端功能 ---
 
     /**
@@ -60,6 +70,16 @@ public class RepairService {
         // TODO: 查询该职工相关维修单的评价
     }
 
+    /**
+     * 获取维修评价 (职工/管理员)
+     * @param repairId 维修单ID
+     * @return 评价内容
+     */
+    public src.entity.Evaluation getEvaluation(int repairId) {
+        // TODO: 调用 EvaluationDAO 查询
+        return null;
+    }
+
     // --- 管理员功能 ---
 
     /**
@@ -77,5 +97,22 @@ public class RepairService {
     public void assignRepairTask(int repairId, String staffId) {
         // TODO: 更新维修单的 HandlerID
     }
-}
 
+    /**
+     * 分配维修任务 (管理员)
+     * @param repairId 维修单ID
+     * @param handlerId 处理人工号
+     */
+    public void assignHandler(int repairId, String handlerId) {
+        // TODO: 调用 DAO 更新处理人
+    }
+
+    /**
+     * 获取所有维修单 (管理员)
+     * @return 维修单列表
+     */
+    public List<Repair> getAllRepairs() {
+        // TODO: 调用 DAO 查询所有
+        return null;
+    }
+}

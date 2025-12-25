@@ -55,10 +55,12 @@ public class AdminView {
 
     private void showAccountMenu() {
         System.out.println("\n--- 账号管理 ---");
-        System.out.println("1. 设置用户");
-        System.out.println("2. 注销用户");
+        System.out.println("1. 添加学生");
+        System.out.println("2. 删除学生");
+        System.out.println("3. 添加职工");
+        System.out.println("4. 删除职工");
         System.out.println("0. 返回");
-        // TODO: 调用 UserService
+        // TODO: 读取输入并调用 UserService
     }
 
     private void showRepairMenu() {
@@ -66,20 +68,20 @@ public class AdminView {
         System.out.println("1. 统计报修数量");
         System.out.println("2. 分配维修任务");
         System.out.println("0. 返回");
-        // TODO: 调用 RepairService
+        // TODO: 读取输入并调用 RepairService
     }
 
     private void showReservationMenu() {
         System.out.println("\n--- 预约服务 ---");
         System.out.println("1. 审核预约申请");
         System.out.println("0. 返回");
-        // TODO: 调用 ReservationService
+        // TODO: 读取输入并调用 ReservationService
     }
 
     private void showCardMenu() {
         System.out.println("\n--- 校园卡服务 ---");
-        System.out.println("1. 处理挂失/恢复");
+        System.out.println("1. 挂失/恢复校园卡");
         System.out.println("0. 返回");
-        // TODO: 调用 CampusCardService
+        // TODO: 读取输入并调用 CampusCardService
     }
 }

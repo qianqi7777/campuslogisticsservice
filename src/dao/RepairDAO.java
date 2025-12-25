@@ -192,11 +192,12 @@ public class RepairDAO {
     }
 
     /**
-     * 更新维修单状态（例如设置为已完成）
-     * @param repairId 维修单 ID
-     * @param status 要设置的状态
+     * 更新维修单状态
+     * @param repairId 维修单ID
+     * @param status 新状态
+     * @return 是否成功
      */
-    public void updateStatus(int repairId, String status) {
+    public boolean updateStatus(int repairId, String status) {
         // SQL 更新语句
         String sql = "UPDATE Repair SET Status = ? WHERE RepairID = ?";
         Connection conn = null;
@@ -209,7 +210,9 @@ public class RepairDAO {
             int updated = pstmt.executeUpdate();
             if (updated <= 0) {
                 System.out.println("updateStatus: 没有找到匹配的维修记录 (repairId=" + repairId + ")");
+                return false;
             }
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("更新维修状态失败", e);
@@ -219,29 +222,102 @@ public class RepairDAO {
     }
 
     /**
-     * 根据维修单 ID 查询处理人工号（用于查询该单是否已被分配）
-     * @param repairId 维修单 ID
-     * @return 处理人工号字符串或 null
+     * 分配维修人员
+     * @param repairId 维修单ID
+     * @param handlerId 处理人工号
+     * @return 是否成功
      */
-    public String selectHandlerIdByRepairId(int repairId) {
+    public boolean updateHandler(int repairId, String handlerId) {
+        // SQL 更新语句
+        String sql = "UPDATE Repair SET HandlerID = ? WHERE RepairID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, handlerId);
+            pstmt.setInt(2, repairId);
+            int updated = pstmt.executeUpdate();
+            if (updated <= 0) {
+                System.out.println("updateHandler: 没有找到匹配的维修记录 (repairId=" + repairId + ")");
+                return false;
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("分配维修人员失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
+    }
+
+    /**
+     * 根据提交人查询维修单
+     * @param submitterId 提交人学号
+     * @return 维修单列表
+     */
+    public List<Repair> selectBySubmitter(String submitterId) {
+        List<Repair> list = new ArrayList<>();
         // SQL 查询语句
-        String sql = "SELECT HandlerID FROM Repair WHERE RepairID = ?";
+        String sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE SubmitterID = ? ORDER BY SubmitTime DESC";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
             conn = DBUtil.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, repairId);
+            pstmt.setString(1, submitterId);
             rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("HandlerID");
+            while (rs.next()) {
+                Repair r = new Repair();
+                r.setRepairID(rs.getInt("RepairID"));
+                r.setContent(rs.getString("Content"));
+                r.setSubmitTime(rs.getTimestamp("SubmitTime"));
+                r.setStatus(rs.getString("Status"));
+                r.setSubmitterID(rs.getString("SubmitterID"));
+                r.setHandlerID(rs.getString("HandlerID"));
+                list.add(r);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             DBUtil.close(conn, pstmt, rs);
         }
-        return null;
+        return list;
+    }
+
+    /**
+     * 根据处理人查询维修单
+     * @param handlerId 处理人工号
+     * @return 维修单列表
+     */
+    public List<Repair> selectByHandler(String handlerId) {
+        List<Repair> list = new ArrayList<>();
+        // SQL 查询语句
+        String sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE HandlerID = ? ORDER BY SubmitTime DESC";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, handlerId);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Repair r = new Repair();
+                r.setRepairID(rs.getInt("RepairID"));
+                r.setContent(rs.getString("Content"));
+                r.setSubmitTime(rs.getTimestamp("SubmitTime"));
+                r.setStatus(rs.getString("Status"));
+                r.setSubmitterID(rs.getString("SubmitterID"));
+                r.setHandlerID(rs.getString("HandlerID"));
+                list.add(r);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 }

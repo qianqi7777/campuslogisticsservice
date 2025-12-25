@@ -50,5 +50,21 @@ public class CampusCardService {
     public void handleCardStatus(String cardId, boolean recover) {
         // TODO: 如果recover为true，恢复正常；否则挂失
     }
-}
 
+    /**
+     * 获取所有校园卡信息 (管理员)
+     * @return 校园卡列表
+     */
+    public java.util.List<CampusCard> getAllCards() {
+        // TODO: 调用 DAO 查询所有
+        return null;
+    }
+
+    /**
+     * 删除校园卡 (管理员)
+     * @param cardId 卡号
+     */
+    public void deleteCard(String cardId) {
+        // TODO: 调用 DAO 删除
+    }
+}

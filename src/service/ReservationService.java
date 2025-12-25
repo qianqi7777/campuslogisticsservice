@@ -29,6 +29,16 @@ public class ReservationService {
         // TODO: 插入预约记录，状态为待审核
     }
 
+    /**
+     * 获取用户的预约记录 (学生/职工)
+     * @param userId 用户ID
+     * @return 预约列表
+     */
+    public List<Reservation> getReservationsByUser(String userId) {
+        // TODO: 调用 DAO 查询
+        return null;
+    }
+
     // --- 管理员功能 ---
 
     /**
@@ -39,5 +49,13 @@ public class ReservationService {
     public void auditReservation(int resId, boolean pass) {
         // TODO: 更新预约状态
     }
-}
 
+    /**
+     * 获取所有预约记录 (管理员/职工)
+     * @return 预约列表
+     */
+    public List<Reservation> getAllReservations() {
+        // TODO: 调用 DAO 查询所有
+        return null;
+    }
+}

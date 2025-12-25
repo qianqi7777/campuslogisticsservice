@@ -61,7 +61,7 @@ public class LoginView {
             System.out.println("登录成功！欢迎 " + student.getSName());
             new StudentView(student).show();
         } else {
-            System.out.println("登录失败：学号不存在或密码错误 (或功能未实现)。");
+            System.out.println("登录失败，用户名或密码错误。");
         }
     }
 
@@ -76,10 +76,15 @@ public class LoginView {
 
         Staff staff = userService.loginStaff(eid, pwd);
         if (staff != null) {
+            // 检查是否是管理员 (这里简单通过职位判断，或者在 Staff 实体加字段)
+            // 假设管理员也是 Staff，只是职位不同，或者 AdminView 也是一种 StaffView
+            // 但根据需求，管理员有单独的 AdminView
+            // 这里假设职位包含 "管理员" 字样则是管理员，否则是普通职工
+            // 或者根据登录入口区分，这里是职工登录入口
             System.out.println("登录成功！欢迎 " + staff.getEName());
             new StaffView(staff).show();
         } else {
-            System.out.println("登录失败：工号不存在或密码错误 (或功能未实现)。");
+            System.out.println("登录失败，用户名或密码错误。");
         }
     }
 
@@ -87,25 +92,18 @@ public class LoginView {
      * 管理员登录流程
      */
     private void loginAdmin() {
-        System.out.print("请输入工号：");
+        System.out.print("请输入管理员账号：");
         String eid = scanner.nextLine();
         System.out.print("请输入密码：");
         String pwd = scanner.nextLine();
 
-        Staff staff = userService.loginStaff(eid, pwd);
-        // 简单判断：如果登录成功且职位包含"管理员"
-        if (staff != null) {
-            // 这里假设职位名称包含"管理员"即为管理员，或者可以硬编码特定工号
-            // 实际项目中应有更严谨的权限控制
-            if (staff.getPosition() != null && staff.getPosition().contains("管理员")) {
-                System.out.println("管理员登录成功！欢迎 " + staff.getEName());
-                new AdminView(staff).show();
-            } else {
-                System.out.println("登录失败：该账号没有管理员权限。");
-            }
+        Staff admin = userService.loginStaff(eid, pwd);
+        if (admin != null) {
+            // 可以在这里校验职位是否为管理员
+            System.out.println("管理员登录成功！欢迎 " + admin.getEName());
+            new AdminView(admin).show();
         } else {
-            System.out.println("登录失败：工号不存在或密码错误 (或功能未实现)。");
+            System.out.println("登录失败，用户名或密码错误。");
         }
     }
 }
-

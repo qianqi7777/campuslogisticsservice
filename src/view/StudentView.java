@@ -53,7 +53,7 @@ public class StudentView {
         System.out.println("1. 提交报修单");
         System.out.println("2. 评价维修");
         System.out.println("0. 返回");
-        // TODO: 调用 RepairService
+        // TODO: 读取输入并调用 RepairService
     }
 
     private void showReservationMenu() {
@@ -61,15 +61,15 @@ public class StudentView {
         System.out.println("1. 查询场地状态");
         System.out.println("2. 提交预约申请");
         System.out.println("0. 返回");
-        // TODO: 调用 ReservationService
+        // TODO: 读取输入并调用 ReservationService
     }
 
     private void showCardMenu() {
         System.out.println("\n--- 校园卡服务 ---");
-        System.out.println("1. 账户查询");
+        System.out.println("1. 查询余额");
         System.out.println("2. 充值");
         System.out.println("3. 挂失");
         System.out.println("0. 返回");
-        // TODO: 调用 CampusCardService
+        // TODO: 读取输入并调用 CampusCardService
     }
 }

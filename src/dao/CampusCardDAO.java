@@ -181,4 +181,55 @@ public class CampusCardDAO {
         }
         return list;
     }
+
+    /**
+     * 更新校园卡余额
+     * @param cardId 卡号
+     * @param amount 变动金额（正数为充值，负数为消费）
+     * @return 是否成功
+     */
+    public boolean updateBalance(String cardId, double amount) {
+        // TODO: 实现更新余额逻辑
+        return false;
+    }
+
+    /**
+     * 更新校园卡状态
+     * @param cardId 卡号
+     * @param status 新状态（例如 "挂失", "正常"）
+     * @return 是否成功
+     */
+    public boolean updateStatus(String cardId, String status) {
+        // TODO: 实现更新状态逻辑
+        return false;
+    }
+
+    /**
+     * 插入新校园卡
+     * @param card CampusCard 对象
+     * @return 是否成功
+     */
+    public boolean insertCard(CampusCard card) {
+        // TODO: 实现插入校园卡逻辑
+        return false;
+    }
+
+    /**
+     * 删除校园卡
+     * @param cardId 卡号
+     * @return 是否成功
+     */
+    public boolean deleteCard(String cardId) {
+        // TODO: 实现删除校园卡逻辑
+        return false;
+    }
+
+    /**
+     * 查询所有校园卡（管理员用）
+     * @return 校园卡列表
+     */
+    public List<CampusCard> selectAll() {
+        // TODO: 实现查询所有校园卡逻辑
+        return new ArrayList<>();
+    }
 }

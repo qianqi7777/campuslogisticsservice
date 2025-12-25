@@ -51,5 +51,22 @@ public class UserService {
     public void deleteUser(String userId, String type) {
         // TODO: 调用对应 DAO 删除
     }
-}
 
+    /**
+     * 获取所有学生列表 (管理员功能)
+     * @return 学生列表
+     */
+    public java.util.List<Student> getAllStudents() {
+        // TODO: 调用 StudentDAO 查询所有
+        return null;
+    }
+
+    /**
+     * 获取所有职工列表 (管理员功能)
+     * @return 职工列表
+     */
+    public java.util.List<Staff> getAllStaff() {
+        // TODO: 调用 StaffDAO 查询所有
+        return null;
+    }
+}

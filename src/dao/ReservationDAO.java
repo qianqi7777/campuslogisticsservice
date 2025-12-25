@@ -143,4 +143,44 @@ public class ReservationDAO {
             DBUtil.close(conn, pstmt);
         }
     }
+
+    /**
+     * 更新预约审核状态
+     * @param resId 预约ID
+     * @param status 新状态（通过/拒绝）
+     * @return 是否成功
+     */
+    public boolean updateStatus(int resId, String status) {
+        // TODO: 实现更新审核状态逻辑
+        return false;
+    }
+
+    /**
+     * 根据预约人查询预约记录
+     * @param reserverId 预约人ID
+     * @return 预约记录列表
+     */
+    public List<Reservation> selectByReserver(String reserverId) {
+        // TODO: 实现按预约人查询逻辑
+        return new ArrayList<>();
+    }
+
+    /**
+     * 根据场馆查询预约记录（用于检查冲突）
+     * @param venueId 场馆ID
+     * @return 预约记录列表
+     */
+    public List<Reservation> selectByVenue(int venueId) {
+        // TODO: 实现按场馆查询逻辑
+        return new ArrayList<>();
+    }
+
+    /**
+     * 查询所有预约记录（管理员/职工用）
+     * @return 预约记录列表
+     */
+    public List<Reservation> selectAll() {
+        // TODO: 实现查询所有预约记录逻辑
+        return new ArrayList<>();
+    }
 }

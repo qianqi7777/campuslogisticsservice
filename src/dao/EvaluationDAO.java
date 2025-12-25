@@ -47,6 +47,38 @@ public class EvaluationDAO {
     }
 
     /**
+     * 根据维修单ID查询评价
+     * @param repairId 维修单ID
+     * @return Evaluation 对象或 null
+     */
+    public Evaluation selectByRepairId(int repairId) {
+        // SQL 查询语句
+        String sql = "SELECT EvalID, RepairID, Score, Comment FROM Evaluation WHERE RepairID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, repairId);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Evaluation e = new Evaluation();
+                e.setEvalID(rs.getInt("EvalID"));
+                e.setRepairID(rs.getInt("RepairID"));
+                e.setScore(rs.getInt("Score"));
+                e.setComment(rs.getString("Comment"));
+                return e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return null;
+    }
+
+    /**
      * 查询所有评价记录
      * @return 评价列表（可能为空）
      */
