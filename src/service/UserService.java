@@ -1,9 +1,10 @@
 package src.service;
 
-import src.entity.Student;
-import src.entity.Staff;
-import src.dao.StudentDAO;
+import java.util.List;
 import src.dao.StaffDAO;
+import src.dao.StudentDAO;
+import src.entity.Staff;
+import src.entity.Student;
 
 /**
  * 用户服务类
@@ -20,8 +21,7 @@ public class UserService {
      * @return 登录成功的 Student 对象，失败返回 null
      */
     public Student loginStudent(String sid, String password) {
-        // TODO: 调用 StudentDAO 验证
-        return null;
+        return studentDAO.selectBySidAndPwd(sid, password);
     }
 
     /**
@@ -31,42 +31,51 @@ public class UserService {
      * @return 登录成功的 Staff 对象，失败返回 null
      */
     public Staff loginStaff(String eid, String password) {
-        // TODO: 调用 StaffDAO 验证
-        return null;
+        return staffDAO.selectByEidAndPwd(eid, password);
     }
 
     /**
      * 添加用户 (管理员功能)
      * @param user 用户对象 (Student 或 Staff)
+     * @return 是否添加成功
      */
-    public void addUser(Object user) {
-        // TODO: 判断类型并调用对应 DAO 添加
+    public boolean addUser(Object user) {
+        if (user instanceof Student) {
+            return studentDAO.insertStudent((Student) user);
+        } else if (user instanceof Staff) {
+            return staffDAO.insertStaff((Staff) user);
+        }
+        return false;
     }
 
     /**
      * 注销用户 (管理员功能)
      * @param userId 用户ID
-     * @param type 用户类型
+     * @param type 用户类型 ("student" 或 "staff")
+     * @return 是否删除成功
      */
-    public void deleteUser(String userId, String type) {
-        // TODO: 调用对应 DAO 删除
+    public boolean deleteUser(String userId, String type) {
+        if ("student".equalsIgnoreCase(type)) {
+            return studentDAO.deleteStudent(userId);
+        } else if ("staff".equalsIgnoreCase(type)) {
+            return staffDAO.deleteStaff(userId);
+        }
+        return false;
     }
 
     /**
      * 获取所有学生列表 (管理员功能)
      * @return 学生列表
      */
-    public java.util.List<Student> getAllStudents() {
-        // TODO: 调用 StudentDAO 查询所有
-        return null;
+    public List<Student> getAllStudents() {
+        return studentDAO.selectAll();
     }
 
     /**
      * 获取所有职工列表 (管理员功能)
      * @return 职工列表
      */
-    public java.util.List<Staff> getAllStaff() {
-        // TODO: 调用 StaffDAO 查询所有
-        return null;
+    public List<Staff> getAllStaff() {
+        return staffDAO.selectAll();
     }
 }

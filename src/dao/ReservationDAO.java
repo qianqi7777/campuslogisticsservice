@@ -151,8 +151,8 @@ public class ReservationDAO {
      * @return 是否成功
      */
     public boolean updateStatus(int resId, String status) {
-        // TODO: 实现更新审核状态逻辑
-        return false;
+        updateAuditStatus(resId, status);
+        return true;
     }
 
     /**
@@ -161,8 +161,7 @@ public class ReservationDAO {
      * @return 预约记录列表
      */
     public List<Reservation> selectByReserver(String reserverId) {
-        // TODO: 实现按预约人查询逻辑
-        return new ArrayList<>();
+        return selectByReserverId(reserverId);
     }
 
     /**
@@ -171,8 +170,32 @@ public class ReservationDAO {
      * @return 预约记录列表
      */
     public List<Reservation> selectByVenue(int venueId) {
-        // TODO: 实现按场馆查询逻辑
-        return new ArrayList<>();
+        List<Reservation> list = new ArrayList<>();
+        String sql = "SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE VenueID = ? ORDER BY ResTime DESC";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, venueId);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Reservation r = new Reservation();
+                r.setResID(rs.getInt("ResID"));
+                r.setVenueID(rs.getInt("VenueID"));
+                r.setReserverID(rs.getString("ReserverID"));
+                r.setResTime(rs.getDate("ResTime"));
+                r.setDuration(rs.getInt("Duration"));
+                r.setAuditStatus(rs.getString("AuditStatus"));
+                list.add(r);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 
     /**
@@ -180,7 +203,30 @@ public class ReservationDAO {
      * @return 预约记录列表
      */
     public List<Reservation> selectAll() {
-        // TODO: 实现查询所有预约记录逻辑
-        return new ArrayList<>();
+        List<Reservation> list = new ArrayList<>();
+        String sql = "SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation ORDER BY ResTime DESC";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Reservation r = new Reservation();
+                r.setResID(rs.getInt("ResID"));
+                r.setVenueID(rs.getInt("VenueID"));
+                r.setReserverID(rs.getString("ReserverID"));
+                r.setResTime(rs.getDate("ResTime"));
+                r.setDuration(rs.getInt("Duration"));
+                r.setAuditStatus(rs.getString("AuditStatus"));
+                list.add(r);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 }

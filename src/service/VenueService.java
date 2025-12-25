@@ -25,7 +25,11 @@ public class VenueService {
      * @param venue 场馆对象
      */
     public void addVenue(Venue venue) {
-        // TODO: 调用 DAO 插入
+        if (venueDAO.insertVenue(venue)) {
+            System.out.println("添加场馆成功");
+        } else {
+            System.out.println("添加场馆失败");
+        }
     }
 
     /**
@@ -33,7 +37,11 @@ public class VenueService {
      * @param venue 场馆对象
      */
     public void updateVenue(Venue venue) {
-        // TODO: 调用 DAO 更新
+        if (venueDAO.updateVenue(venue)) {
+            System.out.println("更新场馆成功");
+        } else {
+            System.out.println("更新场馆失败");
+        }
     }
 
     /**
@@ -41,7 +49,11 @@ public class VenueService {
      * @param venueId 场馆ID
      */
     public void deleteVenue(int venueId) {
-        // TODO: 调用 DAO 删除
+        if (venueDAO.deleteVenue(venueId)) {
+            System.out.println("删除场馆成功");
+        } else {
+            System.out.println("删除场馆失败");
+        }
     }
 
     /**
@@ -49,7 +61,7 @@ public class VenueService {
      * @return 场馆列表
      */
     public List<Venue> getAllVenues() {
-        // TODO: 调用 DAO 查询所有
+        // 调用 DAO 查询所有
         return venueDAO.selectAll();
     }
 }

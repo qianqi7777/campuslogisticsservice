@@ -1,8 +1,13 @@
 package src.service;
 
 import src.dao.RepairDAO;
+import src.dao.EvaluationDAO;
 import src.entity.Repair;
+import src.entity.Evaluation;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 报修服务类
@@ -10,6 +15,7 @@ import java.util.List;
  */
 public class RepairService {
     private RepairDAO repairDAO = new RepairDAO();
+    private EvaluationDAO evaluationDAO = new EvaluationDAO();
 
     // --- 学生端功能 ---
 
@@ -18,7 +24,7 @@ public class RepairService {
      * @param repair 报修信息
      */
     public void submitRepair(Repair repair) {
-        // TODO: 调用 DAO 插入报修单
+        repairDAO.insertRepair(repair);
     }
 
     /**
@@ -28,7 +34,11 @@ public class RepairService {
      * @param score 评分
      */
     public void evaluateRepair(int repairId, String comment, int score) {
-        // TODO: 调用 EvaluationDAO 插入评价
+        Evaluation eval = new Evaluation();
+        eval.setRepairID(repairId);
+        eval.setComment(comment);
+        eval.setScore(score);
+        evaluationDAO.insertEvaluation(eval);
     }
 
     /**
@@ -37,8 +47,7 @@ public class RepairService {
      * @return 维修单列表
      */
     public List<Repair> getRepairsByStudent(String studentId) {
-        // TODO: 调用 DAO 查询
-        return null;
+        return repairDAO.selectBySubmitter(studentId);
     }
 
     // --- 职工端功能 ---
@@ -49,8 +58,7 @@ public class RepairService {
      * @return 报修单列表
      */
     public List<Repair> getAssignedRepairs(String staffId) {
-        // TODO: 调用 DAO 查询
-        return null;
+        return repairDAO.selectByHandler(staffId);
     }
 
     /**
@@ -59,7 +67,7 @@ public class RepairService {
      * @param status 新状态
      */
     public void updateRepairStatus(int repairId, String status) {
-        // TODO: 调用 DAO 更新状态
+        repairDAO.updateStatus(repairId, status);
     }
 
     /**
@@ -67,7 +75,14 @@ public class RepairService {
      * @param staffId 职工ID
      */
     public void viewEvaluations(String staffId) {
-        // TODO: 查询该职工相关维修单的评价
+        List<Repair> repairs = repairDAO.selectByHandler(staffId);
+        System.out.println("--- 我的维修评价 ---");
+        for (Repair r : repairs) {
+            Evaluation e = evaluationDAO.selectByRepairId(r.getRepairID());
+            if (e != null) {
+                System.out.printf("维修单ID: %d, 评分: %d, 评价: %s\n", r.getRepairID(), e.getScore(), e.getComment());
+            }
+        }
     }
 
     /**
@@ -75,9 +90,8 @@ public class RepairService {
      * @param repairId 维修单ID
      * @return 评价内容
      */
-    public src.entity.Evaluation getEvaluation(int repairId) {
-        // TODO: 调用 EvaluationDAO 查询
-        return null;
+    public Evaluation getEvaluation(int repairId) {
+        return evaluationDAO.selectByRepairId(repairId);
     }
 
     // --- 管理员功能 ---
@@ -86,7 +100,15 @@ public class RepairService {
      * 统计报修数量 (管理员)
      */
     public void getRepairStatistics() {
-        // TODO: 统计各类报修数量
+        List<Repair> all = repairDAO.selectAll();
+        Map<String, Integer> stats = new HashMap<>();
+        for (Repair r : all) {
+            stats.put(r.getStatus(), stats.getOrDefault(r.getStatus(), 0) + 1);
+        }
+        System.out.println("--- 报修统计 ---");
+        for (Map.Entry<String, Integer> entry : stats.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
     }
 
     /**
@@ -95,7 +117,9 @@ public class RepairService {
      * @param staffId 职工ID
      */
     public void assignRepairTask(int repairId, String staffId) {
-        // TODO: 更新维修单的 HandlerID
+        repairDAO.updateHandler(repairId, staffId);
+        // 通常分配后状态变为 "处理中"
+        repairDAO.updateStatus(repairId, "处理中");
     }
 
     /**
@@ -104,7 +128,7 @@ public class RepairService {
      * @param handlerId 处理人工号
      */
     public void assignHandler(int repairId, String handlerId) {
-        // TODO: 调用 DAO 更新处理人
+        repairDAO.updateHandler(repairId, handlerId);
     }
 
     /**
@@ -112,7 +136,6 @@ public class RepairService {
      * @return 维修单列表
      */
     public List<Repair> getAllRepairs() {
-        // TODO: 调用 DAO 查询所有
-        return null;
+        return repairDAO.selectAll();
     }
 }

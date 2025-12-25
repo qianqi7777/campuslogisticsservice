@@ -1,7 +1,9 @@
 package src.service;
 
 import src.dao.ReservationDAO;
+import src.dao.VenueDAO;
 import src.entity.Reservation;
+import src.entity.Venue;
 import java.util.List;
 
 /**
@@ -10,6 +12,7 @@ import java.util.List;
  */
 public class ReservationService {
     private ReservationDAO reservationDAO = new ReservationDAO();
+    private VenueDAO venueDAO = new VenueDAO();
 
     // --- 学生/职工端功能 ---
 
@@ -18,7 +21,17 @@ public class ReservationService {
      * @param venueId 场地ID
      */
     public void checkVenueStatus(int venueId) {
-        // TODO: 查询场地是否被预约
+        Venue v = venueDAO.selectById(venueId);
+        if (v == null) {
+            System.out.println("场地不存在");
+            return;
+        }
+        System.out.println("场地: " + v.getVenueName() + ", 状态: " + v.getIsAvailable());
+        List<Reservation> list = reservationDAO.selectByVenue(venueId);
+        System.out.println("已有预约:");
+        for (Reservation r : list) {
+            System.out.println("时间: " + r.getResTime() + ", 时长: " + r.getDuration() + ", 状态: " + r.getAuditStatus());
+        }
     }
 
     /**
@@ -26,7 +39,8 @@ public class ReservationService {
      * @param reservation 预约信息
      */
     public void submitReservation(Reservation reservation) {
-        // TODO: 插入预约记录，状态为待审核
+        reservation.setAuditStatus("待审核");
+        reservationDAO.insertReservation(reservation);
     }
 
     /**
@@ -35,8 +49,7 @@ public class ReservationService {
      * @return 预约列表
      */
     public List<Reservation> getReservationsByUser(String userId) {
-        // TODO: 调用 DAO 查询
-        return null;
+        return reservationDAO.selectByReserver(userId);
     }
 
     // --- 管理员功能 ---
@@ -47,7 +60,8 @@ public class ReservationService {
      * @param pass 是否通过
      */
     public void auditReservation(int resId, boolean pass) {
-        // TODO: 更新预约状态
+        String status = pass ? "通过" : "拒绝";
+        reservationDAO.updateAuditStatus(resId, status);
     }
 
     /**
@@ -55,7 +69,6 @@ public class ReservationService {
      * @return 预约列表
      */
     public List<Reservation> getAllReservations() {
-        // TODO: 调用 DAO 查询所有
-        return null;
+        return reservationDAO.selectAll();
     }
 }

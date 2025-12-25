@@ -189,8 +189,22 @@ public class CampusCardDAO {
      * @return 是否成功
      */
     public boolean updateBalance(String cardId, double amount) {
-        // TODO: 实现更新余额逻辑
-        return false;
+        String sql = "UPDATE CampusCard SET Balance = Balance + ? WHERE CardID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setDouble(1, amount);
+            pstmt.setString(2, cardId);
+            int updated = pstmt.executeUpdate();
+            return updated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("更新余额失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -200,8 +214,8 @@ public class CampusCardDAO {
      * @return 是否成功
      */
     public boolean updateStatus(String cardId, String status) {
-        // TODO: 实现更新状态逻辑
-        return false;
+        updateStatusByCardId(cardId, status);
+        return true;
     }
 
     /**
@@ -210,8 +224,25 @@ public class CampusCardDAO {
      * @return 是否成功
      */
     public boolean insertCard(CampusCard card) {
-        // TODO: 实现插入校园卡逻辑
-        return false;
+        String sql = "INSERT INTO CampusCard (CardID, UserID, UserType, Balance, Status) VALUES (?, ?, ?, ?, ?)";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, card.getCardID());
+            pstmt.setString(2, card.getUserID());
+            pstmt.setString(3, card.getUserType());
+            pstmt.setBigDecimal(4, card.getBalance());
+            pstmt.setString(5, card.getStatus());
+            int rows = pstmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("插入校园卡失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -220,8 +251,21 @@ public class CampusCardDAO {
      * @return 是否成功
      */
     public boolean deleteCard(String cardId) {
-        // TODO: 实现删除校园卡逻辑
-        return false;
+        String sql = "DELETE FROM CampusCard WHERE CardID = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, cardId);
+            int rows = pstmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("删除校园卡失败", e);
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
     }
 
     /**
@@ -229,7 +273,30 @@ public class CampusCardDAO {
      * @return 校园卡列表
      */
     public List<CampusCard> selectAll() {
-        // TODO: 实现查询所有校园卡逻辑
-        return new ArrayList<>();
+        List<CampusCard> list = new ArrayList<>();
+        String sql = "SELECT CardID, UserID, UserType, Balance, Status, CreateTime FROM CampusCard";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                CampusCard card = new CampusCard();
+                card.setCardID(rs.getString("CardID"));
+                card.setUserID(rs.getString("UserID"));
+                card.setUserType(rs.getString("UserType"));
+                card.setBalance(rs.getBigDecimal("Balance"));
+                card.setStatus(rs.getString("Status"));
+                card.setCreateTime(rs.getTimestamp("CreateTime"));
+                list.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return list;
     }
 }

@@ -1,6 +1,12 @@
 package src.view;
 
 import src.entity.Student;
+import src.service.RepairService;
+import src.service.ReservationService;
+import src.service.CampusCardService;
+import src.entity.Repair;
+import src.entity.Reservation;
+import java.sql.Date;
 import java.util.Scanner;
 
 /**
@@ -10,6 +16,9 @@ import java.util.Scanner;
 public class StudentView {
     private Student student;
     private Scanner scanner = new Scanner(System.in);
+    private RepairService repairService = new RepairService();
+    private ReservationService reservationService = new ReservationService();
+    private CampusCardService cardService = new CampusCardService();
 
     public StudentView(Student student) {
         this.student = student;
@@ -49,27 +58,111 @@ public class StudentView {
     }
 
     private void showRepairMenu() {
-        System.out.println("\n--- 报修服务 ---");
-        System.out.println("1. 提交报修单");
-        System.out.println("2. 评价维修");
-        System.out.println("0. 返回");
-        // TODO: 读取输入并调用 RepairService
+        while (true) {
+            System.out.println("\n--- 报修服务 ---");
+            System.out.println("1. 提交报修单");
+            System.out.println("2. 评价维修");
+            System.out.println("0. 返回");
+            System.out.print("请选择：");
+
+            String choice = scanner.nextLine();
+            if ("0".equals(choice)) return;
+
+            switch (choice) {
+                case "1":
+                    System.out.print("请输入报修内容：");
+                    String content = scanner.nextLine();
+                    Repair r = new Repair();
+                    r.setContent(content);
+                    r.setSubmitterID(student.getSid());
+                    r.setStatus("待处理");
+                    repairService.submitRepair(r);
+                    break;
+                case "2":
+                    System.out.print("请输入维修单ID：");
+                    int rid = Integer.parseInt(scanner.nextLine());
+                    System.out.print("请输入评分 (1-5)：");
+                    int score = Integer.parseInt(scanner.nextLine());
+                    System.out.print("请输入评价内容：");
+                    String comment = scanner.nextLine();
+                    repairService.evaluateRepair(rid, comment, score);
+                    break;
+                default:
+                    System.out.println("无效选项");
+            }
+        }
     }
 
     private void showReservationMenu() {
-        System.out.println("\n--- 预约服务 ---");
-        System.out.println("1. 查询场地状态");
-        System.out.println("2. 提交预约申请");
-        System.out.println("0. 返回");
-        // TODO: 读取输入并调用 ReservationService
+        while (true) {
+            System.out.println("\n--- 预约服务 ---");
+            System.out.println("1. 查询场地状态");
+            System.out.println("2. 提交预约申请");
+            System.out.println("0. 返回");
+            System.out.print("请选择：");
+
+            String choice = scanner.nextLine();
+            if ("0".equals(choice)) return;
+
+            switch (choice) {
+                case "1":
+                    System.out.print("请输入场地ID：");
+                    int vid = Integer.parseInt(scanner.nextLine());
+                    reservationService.checkVenueStatus(vid);
+                    break;
+                case "2":
+                    System.out.print("请输入场地ID：");
+                    int venueId = Integer.parseInt(scanner.nextLine());
+                    System.out.print("请输入预约日期 (yyyy-MM-dd)：");
+                    String dateStr = scanner.nextLine();
+                    System.out.print("请输入时长 (小时)：");
+                    int duration = Integer.parseInt(scanner.nextLine());
+
+                    Reservation r = new Reservation();
+                    r.setVenueID(venueId);
+                    r.setReserverID(student.getSid());
+                    r.setResTime(Date.valueOf(dateStr));
+                    r.setDuration(duration);
+                    reservationService.submitReservation(r);
+                    System.out.println("预约申请已提交，等待审核。");
+                    break;
+                default:
+                    System.out.println("无效选项");
+            }
+        }
     }
 
     private void showCardMenu() {
-        System.out.println("\n--- 校园卡服务 ---");
-        System.out.println("1. 查询余额");
-        System.out.println("2. 充值");
-        System.out.println("3. 挂失");
-        System.out.println("0. 返回");
-        // TODO: 读取输入并调用 CampusCardService
+        while (true) {
+            System.out.println("\n--- 校园卡服务 ---");
+            System.out.println("1. 查询余额");
+            System.out.println("2. 充值");
+            System.out.println("3. 挂失");
+            System.out.println("0. 返回");
+            System.out.print("请选择：");
+
+            String choice = scanner.nextLine();
+            if ("0".equals(choice)) return;
+
+            switch (choice) {
+                case "1":
+                    cardService.getCardInfo(student.getSid());
+                    break;
+                case "2":
+                    System.out.print("请输入卡号：");
+                    String cid = scanner.nextLine();
+                    System.out.print("请输入金额：");
+                    java.math.BigDecimal amount = new java.math.BigDecimal(scanner.nextLine());
+                    cardService.recharge(cid, amount);
+                    break;
+                case "3":
+                    System.out.print("请输入卡号：");
+                    String cid2 = scanner.nextLine();
+                    cardService.reportLoss(cid2);
+                    break;
+                default:
+                    System.out.println("无效选项");
+            }
+        }
     }
 }

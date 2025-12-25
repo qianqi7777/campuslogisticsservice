@@ -19,8 +19,18 @@ public class CampusCardService {
      * @return 校园卡信息
      */
     public CampusCard getCardInfo(String userId) {
-        // TODO: 查询校园卡
-        return null;
+        // 尝试查找学生卡
+        CampusCard card = cardDAO.selectByUserIdAndType(userId, "student");
+        if (card == null) {
+            // 尝试查找职工卡
+            card = cardDAO.selectByUserIdAndType(userId, "staff");
+        }
+        if (card != null) {
+            System.out.println("卡号: " + card.getCardID() + ", 余额: " + card.getBalance() + ", 状态: " + card.getStatus());
+        } else {
+            System.out.println("未找到校园卡信息");
+        }
+        return card;
     }
 
     /**
@@ -29,7 +39,15 @@ public class CampusCardService {
      * @param amount 金额
      */
     public void recharge(String cardId, BigDecimal amount) {
-        // TODO: 更新余额
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            System.out.println("充值金额必须大于0");
+            return;
+        }
+        if (cardDAO.updateBalance(cardId, amount.doubleValue())) {
+            System.out.println("充值成功");
+        } else {
+            System.out.println("充值失败，卡号可能不存在");
+        }
     }
 
     /**
@@ -37,7 +55,8 @@ public class CampusCardService {
      * @param cardId 卡号
      */
     public void reportLoss(String cardId) {
-        // TODO: 更新状态为挂失
+        cardDAO.updateStatusByCardId(cardId, "挂失");
+        System.out.println("已提交挂失请求");
     }
 
     // --- 管理员功能 ---
@@ -48,7 +67,9 @@ public class CampusCardService {
      * @param recover 是否恢复
      */
     public void handleCardStatus(String cardId, boolean recover) {
-        // TODO: 如果recover为true，恢复正常；否则挂失
+        String status = recover ? "正常" : "挂失";
+        cardDAO.updateStatusByCardId(cardId, status);
+        System.out.println("校园卡状态已更新为: " + status);
     }
 
     /**
@@ -56,8 +77,7 @@ public class CampusCardService {
      * @return 校园卡列表
      */
     public java.util.List<CampusCard> getAllCards() {
-        // TODO: 调用 DAO 查询所有
-        return null;
+        return cardDAO.selectAll();
     }
 
     /**
@@ -65,6 +85,10 @@ public class CampusCardService {
      * @param cardId 卡号
      */
     public void deleteCard(String cardId) {
-        // TODO: 调用 DAO 删除
+        if (cardDAO.deleteCard(cardId)) {
+            System.out.println("删除成功");
+        } else {
+            System.out.println("删除失败");
+        }
     }
 }
