@@ -16,6 +16,7 @@ public class VenueService {
      * @return Venue 列表
      */
     public List<Venue> selectAvailableVenues() {
+        // 调用 DAO 查询所有可用场馆
         return venueDAO.selectAvailableVenues();
     }
 }

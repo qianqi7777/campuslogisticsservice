@@ -42,7 +42,13 @@ public class ReservationService {
         reservationDAO.insertReservation(reservation);
     }
 
+    /**
+     * 根据预约者 ID 查询其所有预约记录
+     * @param reserverId 预约者学号
+     * @return 预约记录列表
+     */
     public List<Reservation> selectByReserverId(String reserverId) {
+        // 调用 DAO 查询
         return reservationDAO.selectByReserverId(reserverId);
     }
 
@@ -52,9 +58,11 @@ public class ReservationService {
      * @param auditStatus 审核状态
      */
     public void updateAuditStatus(int resId, String auditStatus) {
+        // 参数校验
         if (resId <= 0 || auditStatus == null || auditStatus.trim().isEmpty()) {
             throw new IllegalArgumentException("参数不合法");
         }
+        // 状态合法性检查
         if (!auditStatus.equals("通过") && !auditStatus.equals("拒绝") && !auditStatus.equals("待审核")) {
             throw new IllegalArgumentException("不支持的审核状态");
         }

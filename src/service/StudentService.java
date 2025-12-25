@@ -17,6 +17,7 @@ public class StudentService {
      * @return Student 成功返回 Student 对象，否则返回 null
      */
     public Student login(String sid, String password) {
+        // 调用 DAO 层方法验证学号和密码
         return studentDAO.selectBySidAndPwd(sid, password);
     }
 }

@@ -16,19 +16,25 @@ public class ReservationDAO {
      * @param reservation 要插入的 Reservation 对象
      */
     public void insertReservation(Reservation reservation) {
+        // SQL 插入语句
         String sql = "INSERT INTO Reservation (VenueID, ReserverID, ResTime, Duration, AuditStatus) VALUES (?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
+            // 获取数据库连接
             conn = DBUtil.getConnection();
+            // 创建 PreparedStatement，并指定返回生成的主键
             pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            // 设置参数
             pstmt.setInt(1, reservation.getVenueID());
             pstmt.setString(2, reservation.getReserverID());
             pstmt.setDate(3, reservation.getResTime());
             pstmt.setInt(4, reservation.getDuration());
             pstmt.setString(5, reservation.getAuditStatus());
+            // 执行插入
             pstmt.executeUpdate();
+            // 获取自增主键
             rs = pstmt.getGeneratedKeys();
             if (rs != null && rs.next()) {
                 reservation.setResID(rs.getInt(1));
@@ -37,6 +43,7 @@ public class ReservationDAO {
             e.printStackTrace();
             throw new RuntimeException("插入预约记录失败", e);
         } finally {
+            // 关闭资源
             DBUtil.close(conn, pstmt, rs);
         }
     }
@@ -47,6 +54,7 @@ public class ReservationDAO {
      * @return Reservation 对象或 null
      */
     public Reservation selectById(int resId) {
+        // SQL 查询语句
         String sql = "SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE ResID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -81,6 +89,7 @@ public class ReservationDAO {
      */
     public List<Reservation> selectByReserverId(String reserverId) {
         List<Reservation> list = new ArrayList<>();
+        // SQL 查询语句，按预约时间降序排列
         String sql = "SELECT ResID, VenueID, ReserverID, ResTime, Duration, AuditStatus FROM Reservation WHERE ReserverID = ? ORDER BY ResTime DESC";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -114,6 +123,7 @@ public class ReservationDAO {
      * @param auditStatus 审核状态，如 "通过"、"拒绝"
      */
     public void updateAuditStatus(int resId, String auditStatus) {
+        // SQL 更新语句
         String sql = "UPDATE Reservation SET AuditStatus = ? WHERE ResID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;

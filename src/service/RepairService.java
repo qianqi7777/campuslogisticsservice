@@ -18,13 +18,16 @@ public class RepairService {
      * @param repair 要提交的维修实体
      */
     public void addRepair(Repair repair) {
+        // 基础参数校验
         if (repair == null || repair.getContent() == null || repair.getContent().trim().isEmpty()
             || repair.getSubmitterID() == null || repair.getSubmitterID().trim().isEmpty()) {
             throw new IllegalArgumentException("维修申请信息不完整");
         }
+        // 默认状态为待处理
         if (repair.getStatus() == null) {
             repair.setStatus("待处理");
         }
+        // 调用 DAO 插入维修记录
         repairDAO.insertRepair(repair);
     }
 
@@ -34,6 +37,7 @@ public class RepairService {
      * @param handlerId 处理人工号
      */
     public void assignRepairTask(int repairId, String handlerId) {
+        // 参数校验
         if (repairId <= 0 || handlerId == null || handlerId.trim().isEmpty()) {
             throw new IllegalArgumentException("参数不合法");
         }
@@ -46,6 +50,7 @@ public class RepairService {
         if (repairDAO.selectById(repairId) == null) {
             throw new RuntimeException("维修单不存在");
         }
+        // 更新维修单的处理人和状态
         repairDAO.updateHandlerAndStatus(repairId, handlerId, "处理中");
     }
 
@@ -54,10 +59,13 @@ public class RepairService {
      * @param repairId 维修单 ID
      */
     public void updateToCompleted(int repairId) {
+        // 参数校验
         if (repairId <= 0) throw new IllegalArgumentException("repairId 不合法");
+        // 检查维修单是否存在
         if (repairDAO.selectById(repairId) == null) {
             throw new RuntimeException("维修单不存在");
         }
+        // 更新状态为已完成
         repairDAO.updateStatus(repairId, "已完成");
     }
 }

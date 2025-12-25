@@ -15,6 +15,7 @@ public class CampusCardService {
      * 根据用户 ID 和类型查询校园卡
      */
     public CampusCard selectByUserIdAndType(String userId, String userType) {
+        // 调用 DAO 查询校园卡信息
         return campusCardDAO.selectByUserIdAndType(userId, userType);
     }
 
@@ -24,6 +25,7 @@ public class CampusCardService {
      * @param userType 用户类型
      */
     public void updateStatusToLost(String userId, String userType) {
+        // 参数校验
         if (userId == null || userId.trim().isEmpty() || userType == null || userType.trim().isEmpty()) {
             throw new IllegalArgumentException("参数不合法");
         }
@@ -31,6 +33,7 @@ public class CampusCardService {
         if (campusCardDAO.selectByUserIdAndType(userId, userType) == null) {
             throw new RuntimeException("未找到对应的校园卡记录");
         }
+        // 更新状态为挂失
         campusCardDAO.updateStatus(userId, userType, "挂失");
     }
 
@@ -38,6 +41,7 @@ public class CampusCardService {
      * 查询所有挂失的校园卡（管理端展示）
      */
     public List<CampusCard> selectLostCards() {
+        // 调用 DAO 查询所有挂失卡
         return campusCardDAO.selectLostCards();
     }
 
@@ -46,6 +50,7 @@ public class CampusCardService {
      * @param cardId 卡号
      */
     public void recoverCard(String cardId) {
+        // 参数校验
         if (cardId == null || cardId.trim().isEmpty()) {
             throw new IllegalArgumentException("cardId 不能为空");
         }
@@ -53,6 +58,7 @@ public class CampusCardService {
         if (campusCardDAO.selectByCardId(cardId) == null) {
             throw new RuntimeException("未找到对应的校园卡");
         }
+        // 更新状态为正常
         campusCardDAO.updateStatusByCardId(cardId, "正常");
     }
 }

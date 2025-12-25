@@ -14,12 +14,12 @@ public class Main {
      */
     public static void main(String[] args) {
         // 1. 初始化数据库
-        // 调用工具类检查并创建数据库及表结构
+        // 调用工具类检查并创建数据库及表结构，确保运行环境就绪
         DatabaseInitializer.initDatabase();
 
         // 2. 启动登录界面
         System.out.println("欢迎使用校园服务管理系统！");
-        // 创建并显示登录窗口
+        // 创建登录视图对象并调用 show() 方法显示主菜单
         new LoginView().show();
     }
 }

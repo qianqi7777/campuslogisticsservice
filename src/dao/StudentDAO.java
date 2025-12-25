@@ -19,11 +19,14 @@ public class StudentDAO {
      * @return Student 对象或 null
      */
     public Student selectBySidAndPwd(String sid, String password) {
+        // SQL 查询语句
         String sql = "SELECT * FROM Student WHERE SID = ? AND Password = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // 设置参数
             pstmt.setString(1, sid);
             pstmt.setString(2, password);
+            // 执行查询
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Student(
@@ -48,10 +51,13 @@ public class StudentDAO {
      * @return 学院名称或 null
      */
     public String selectCollegeBySid(String sid) {
+        // SQL 查询语句
         String sql = "SELECT College FROM Student WHERE SID = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // 设置参数
             pstmt.setString(1, sid);
+            // 执行查询
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("College");

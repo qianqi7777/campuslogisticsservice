@@ -23,6 +23,7 @@ public class AdminService {
      * @return Staff 登录成功返回 Staff 对象，否则返回 null
      */
     public Staff login(String eid, String password) {
+        // 调用 DAO 层方法验证工号和密码
         return staffDAO.selectByEidAndPwd(eid, password);
     }
 
@@ -30,6 +31,7 @@ public class AdminService {
      * 按学院统计维修数量（通过 Repair 与 Student 表联表统计）
      */
     public void statRepairByCollege() {
+        // SQL 统计语句：联结 Repair 和 Student 表，按学院分组统计维修单数量
         String sql = "SELECT s.College, COUNT(r.RepairID) AS cnt " +
                      "FROM Repair r JOIN Student s ON r.SubmitterID = s.SID " +
                      "GROUP BY s.College";
@@ -37,6 +39,7 @@ public class AdminService {
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             System.out.println("学院\t维修数量");
+            // 遍历结果集并输出
             while (rs.next()) {
                 String college = rs.getString("College");
                 int cnt = rs.getInt("cnt");
@@ -52,11 +55,13 @@ public class AdminService {
      * 统计维修评价（示例：按评分分布统计）
      */
     public void statRepairEvaluation() {
+        // SQL 统计语句：按评分分组统计数量
         String sql = "SELECT Score, COUNT(*) AS cnt FROM Evaluation GROUP BY Score ORDER BY Score DESC";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             System.out.println("评分\t数量");
+            // 遍历结果集并输出
             while (rs.next()) {
                 int score = rs.getInt("Score");
                 int cnt = rs.getInt("cnt");

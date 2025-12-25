@@ -19,6 +19,7 @@ public class EvaluationService {
      * @param submitterId 提交评价的学生学号（用于校验）
      */
     public void addEvaluation(Evaluation evaluation, String submitterId) {
+        // 基础参数校验
         if (evaluation == null || evaluation.getRepairID() <= 0) {
             throw new IllegalArgumentException("评价信息不完整");
         }
@@ -35,6 +36,7 @@ public class EvaluationService {
             throw new RuntimeException("无权对该维修单进行评价");
         }
 
+        // 插入评价记录
         evaluationDAO.insertEvaluation(evaluation);
     }
 }

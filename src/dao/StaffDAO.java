@@ -19,11 +19,14 @@ public class StaffDAO {
      * @return Staff 对象或 null
      */
     public Staff selectByEidAndPwd(String eid, String password) {
+        // SQL 查询语句
         String sql = "SELECT * FROM Staff WHERE EID = ? AND Password = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // 设置参数
             pstmt.setString(1, eid);
             pstmt.setString(2, password);
+            // 执行查询
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Staff(
@@ -49,11 +52,14 @@ public class StaffDAO {
      * @return Staff 或 null
      */
     public Staff selectByEidAndDept(String eid, String dept) {
+        // SQL 查询语句
         String sql = "SELECT * FROM Staff WHERE EID = ? AND Dept = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // 设置参数
             pstmt.setString(1, eid);
             pstmt.setString(2, dept);
+            // 执行查询
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Staff(
@@ -78,10 +84,13 @@ public class StaffDAO {
      * @return Staff 或 null
      */
     public Staff selectByEid(String eid) {
+        // SQL 查询语句
         String sql = "SELECT * FROM Staff WHERE EID = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            // 设置参数
             pstmt.setString(1, eid);
+            // 执行查询
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return new Staff(

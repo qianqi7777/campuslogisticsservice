@@ -17,6 +17,7 @@ public class VenueDAO {
      * @return Venue 对象或 null
      */
     public Venue selectById(int venueId) {
+        // SQL 查询语句
         String sql = "SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE VenueID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -49,6 +50,7 @@ public class VenueDAO {
      */
     public List<Venue> selectAvailableVenues() {
         List<Venue> list = new ArrayList<>();
+        // SQL 查询语句，按场馆名称排序
         String sql = "SELECT VenueID, VenueName, Capacity, Location, IsAvailable FROM Venue WHERE IsAvailable = '是' ORDER BY VenueName";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -80,6 +82,7 @@ public class VenueDAO {
      * @param isAvailable "是" 或 "否"
      */
     public void updateIsAvailable(int venueId, String isAvailable) {
+        // SQL 更新语句
         String sql = "UPDATE Venue SET IsAvailable = ? WHERE VenueID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;

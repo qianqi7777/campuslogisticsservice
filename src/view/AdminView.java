@@ -21,6 +21,7 @@ public class AdminView {
      */
     public void show() {
         while (true) {
+            // 打印菜单选项
             System.out.println("\n=== 管理员主菜单 (" + staff.getEName() + ") ===");
             System.out.println("1. 审核场馆预约");
             System.out.println("2. 分配维修任务");
@@ -31,9 +32,11 @@ public class AdminView {
             System.out.println("0. 注销登录");
             System.out.print("请选 择：");
 
+            // 读取用户输入
             String choice = scanner.nextLine();
             if ("0".equals(choice)) return;
 
+            // 占位提示，后续应调用 Service 方法
             System.out.println("功能 [" + choice + "] 尚未实现具体逻辑，仅为示例菜单。");
         }
     }

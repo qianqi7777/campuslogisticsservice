@@ -20,12 +20,14 @@ public class LoginView {
      */
     public void show() {
         while (true) {
+            // 打印登录菜单
             System.out.println("\n=== 登录界面 ===");
             System.out.println("1. 学生登录");
             System.out.println("2. 管理员登录");
             System.out.println("0. 退出系统");
             System.out.print("请 选择：");
 
+            // 读取用户选择
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
@@ -52,9 +54,11 @@ public class LoginView {
         System.out.print("请输入密码：");
         String pwd = scanner.nextLine();
 
+        // 调用 Service 进行登录验证
         Student student = studentService.login(sid, pwd);
         if (student != null) {
             System.out.println("登录成功！欢迎 " + student.getSName());
+            // 跳转到学生视图
             new StudentView(student).show();
         } else {
             System.out.println("登录失败：学号不存在或密码错误。");
@@ -70,9 +74,11 @@ public class LoginView {
         System.out.print("请输入密码：");
         String pwd = scanner.nextLine();
 
+        // 调用 Service 进行登录验证
         Staff staff = adminService.login(eid, pwd);
         if (staff != null) {
             System.out.println("登录成功！欢迎 " + staff.getEName());
+            // 跳转到管理员视图
             new AdminView(staff).show();
         } else {
             System.out.println("登录失败：工号不存在或密码错误。");

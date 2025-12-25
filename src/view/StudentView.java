@@ -20,6 +20,7 @@ public class StudentView {
      */
     public void show() {
         while (true) {
+            // 打印学生菜单
             System.out.println("\n=== 学生主菜单 (" + student.getSName() + ") ===");
             System.out.println("1. 提交维修申请");
             System.out.println("2. 评价已完成维修");
@@ -31,9 +32,11 @@ public class StudentView {
             System.out.println("0. 注销登录");
             System.out.print("请选择：");
 
+            // 读取用户输入
             String choice = scanner.nextLine();
             if ("0".equals(choice)) return;
 
+            // 占位提示，后续应调用 Service 方法
             System.out.println("功能 [" + choice + "] 尚未实现具体逻辑，仅为示例菜单。");
         }
     }

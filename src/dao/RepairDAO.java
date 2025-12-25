@@ -16,14 +16,19 @@ public class RepairDAO {
      * @param repair 要插入的 Repair 实体
      */
     public void insertRepair(Repair repair) {
+        // SQL 插入语句
         String sql = "INSERT INTO Repair (Content, SubmitTime, Status, SubmitterID, HandlerID) VALUES (?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
+            // 获取数据库连接
             conn = DBUtil.getConnection();
+            // 创建 PreparedStatement，并指定返回生成的主键
             pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            // 设置参数
             pstmt.setString(1, repair.getContent());
+            // 如果提交时间为空，则使用当前系统时间
             if (repair.getSubmitTime() != null) {
                 pstmt.setTimestamp(2, repair.getSubmitTime());
             } else {
@@ -32,7 +37,9 @@ public class RepairDAO {
             pstmt.setString(3, repair.getStatus());
             pstmt.setString(4, repair.getSubmitterID());
             pstmt.setString(5, repair.getHandlerID());
+            // 执行插入
             pstmt.executeUpdate();
+            // 获取自增主键
             rs = pstmt.getGeneratedKeys();
             if (rs != null && rs.next()) {
                 repair.setRepairID(rs.getInt(1));
@@ -41,6 +48,7 @@ public class RepairDAO {
             e.printStackTrace();
             throw new RuntimeException("插入维修记录失败", e);
         } finally {
+            // 关闭资源
             DBUtil.close(conn, pstmt, rs);
         }
     }
@@ -51,6 +59,7 @@ public class RepairDAO {
      * @return Repair 对象或 null
      */
     public Repair selectById(int repairId) {
+        // SQL 查询语句
         String sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE RepairID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -87,6 +96,7 @@ public class RepairDAO {
     public List<Repair> selectBySubmitterIdAndStatus(String submitterId, String status) {
         List<Repair> list = new ArrayList<>();
         String sql;
+        // 根据是否传入状态构建不同的 SQL
         if (status == null) {
             sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair WHERE SubmitterID = ? ORDER BY SubmitTime DESC";
         } else {
@@ -125,6 +135,7 @@ public class RepairDAO {
      */
     public List<Repair> selectAll() {
         List<Repair> list = new ArrayList<>();
+        // SQL 查询语句，按提交时间降序排列
         String sql = "SELECT RepairID, Content, SubmitTime, Status, SubmitterID, HandlerID FROM Repair ORDER BY SubmitTime DESC";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -158,6 +169,7 @@ public class RepairDAO {
      * @param status 新状态
      */
     public void updateHandlerAndStatus(int repairId, String handlerId, String status) {
+        // SQL 更新语句
         String sql = "UPDATE Repair SET HandlerID = ?, Status = ? WHERE RepairID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -185,6 +197,7 @@ public class RepairDAO {
      * @param status 要设置的状态
      */
     public void updateStatus(int repairId, String status) {
+        // SQL 更新语句
         String sql = "UPDATE Repair SET Status = ? WHERE RepairID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -211,6 +224,7 @@ public class RepairDAO {
      * @return 处理人工号字符串或 null
      */
     public String selectHandlerIdByRepairId(int repairId) {
+        // SQL 查询语句
         String sql = "SELECT HandlerID FROM Repair WHERE RepairID = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;

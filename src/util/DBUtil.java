@@ -85,8 +85,11 @@ public class DBUtil {
      */
     public static void close(Connection conn, PreparedStatement pstmt, ResultSet rs) {
         try {
+            // 关闭结果集
             if (rs != null) rs.close();
+            // 关闭预编译语句对象
             if (pstmt != null) pstmt.close();
+            // 关闭数据库连接
             if (conn != null) conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
