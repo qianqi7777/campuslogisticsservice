@@ -80,6 +80,10 @@ public class DatabaseInitializer {
                 "Password VARCHAR(20) DEFAULT 'admin123' COMMENT '默认登录密码'" +
                 ") COMMENT '教职工信息表'");
 
+        // 插入默认管理员账号
+        // 账号名：root123，密码：123456
+        stmt.executeUpdate("INSERT IGNORE INTO Staff (EID, EName, Dept, Phone, Position, Password) VALUES ('admin001', 'root123', '管理中心', '13800000000', '超级管理员', '123456')");
+
         // Repair 表：存储维修申请信息
         // 包含维修单ID、内容、提交时间、状态、提交人、处理人等字段
         // 外键关联 Student(SID) 和 Staff(EID)
@@ -100,7 +104,7 @@ public class DatabaseInitializer {
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Evaluation (" +
                 "EvalID INT PRIMARY KEY AUTO_INCREMENT COMMENT '评价ID'," +
                 "RepairID INT NOT NULL COMMENT '关联维修单ID'," +
-                "Score INT NOT NULL CHECK(Score BETWEEN 1 AND 5) COMMENT '评分'," +
+                "Score INT NOT NULL COMMENT '评分' CHECK(Score BETWEEN 1 AND 5)," +
                 "Comment VARCHAR(200) COMMENT '评价内容'," +
                 "FOREIGN KEY (RepairID) REFERENCES Repair(RepairID) ON DELETE CASCADE" +
                 ") COMMENT '维修评价表'");
@@ -123,7 +127,7 @@ public class DatabaseInitializer {
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Venue (" +
                 "VenueID INT PRIMARY KEY AUTO_INCREMENT COMMENT '场馆ID'," +
                 "VenueName VARCHAR(30) NOT NULL COMMENT '场馆名称'," +
-                "Capacity INT NOT NULL CHECK(Capacity>0) COMMENT '容量'," +
+                "Capacity INT NOT NULL COMMENT '容量' CHECK(Capacity>0)," +
                 "Location VARCHAR(50) NOT NULL COMMENT '所在位置'," +
                 "IsAvailable VARCHAR(2) NOT NULL DEFAULT '是' COMMENT '是否可用'" +
                 ") COMMENT '场馆信息表'");
@@ -136,7 +140,7 @@ public class DatabaseInitializer {
                 "VenueID INT NOT NULL COMMENT '关联场馆ID'," +
                 "ReserverID CHAR(10) COMMENT '预约人学号'," +
                 "ResTime DATE NOT NULL COMMENT '预约日期'," +
-                "Duration INT NOT NULL CHECK(Duration>0) COMMENT '使用时长'," +
+                "Duration INT NOT NULL COMMENT '使用时长' CHECK(Duration>0)," +
                 "AuditStatus VARCHAR(10) NOT NULL DEFAULT '待审核' COMMENT '审核状态'," +
                 "FOREIGN KEY (VenueID) REFERENCES Venue(VenueID) ON DELETE CASCADE," +
                 "FOREIGN KEY (ReserverID) REFERENCES Student(SID) ON DELETE SET NULL" +
