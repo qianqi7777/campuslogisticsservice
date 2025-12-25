@@ -1,34 +1,29 @@
 package src.view;
 
-import src.entity.Student;
+import src.entity.Staff;
 import java.util.Scanner;
 
 /**
- * 学生控制台视图：StudentView
- * 提供学生用户可以执行的操作菜单（当前为占位示例）
+ * 职工控制台视图
+ * 提供职工相关的操作菜单
  */
-public class StudentView {
-    private Student student;
+public class StaffView {
+    private Staff staff;
     private Scanner scanner = new Scanner(System.in);
 
-    public StudentView(Student student) {
-        this.student = student;
+    public StaffView(Staff staff) {
+        this.staff = staff;
     }
 
-    /**
-     * 显示学生主菜单并响应输入（实际功能由 Service 层实现并在此调用）
-     */
     public void show() {
         while (true) {
-            // 打印学生菜单
-            System.out.println("\n=== 学生主菜单 (" + student.getSName() + ") ===");
-            System.out.println("1. 报修服务 (提交/评价)");
-            System.out.println("2. 预约服务 (查询/申请)");
+            System.out.println("\n=== 职工主菜单 (" + staff.getEName() + ") ===");
+            System.out.println("1. 报修服务 (处理报修/更新状态/查看评价)");
+            System.out.println("2. 预约服务");
             System.out.println("3. 校园卡服务 (查询/充值/挂失)");
             System.out.println("0. 注销登录");
             System.out.print("请选择：");
 
-            // 读取用户输入
             String choice = scanner.nextLine();
             if ("0".equals(choice)) return;
 
@@ -50,18 +45,17 @@ public class StudentView {
 
     private void showRepairMenu() {
         System.out.println("\n--- 报修服务 ---");
-        System.out.println("1. 提交报修单");
-        System.out.println("2. 评价维修");
+        System.out.println("1. 处理报修单");
+        System.out.println("2. 更新维修状态");
+        System.out.println("3. 查看评价");
         System.out.println("0. 返回");
         // TODO: 调用 RepairService
     }
 
     private void showReservationMenu() {
         System.out.println("\n--- 预约服务 ---");
-        System.out.println("1. 查询场地状态");
-        System.out.println("2. 提交预约申请");
-        System.out.println("0. 返回");
-        // TODO: 调用 ReservationService
+        // TODO: 职工预约相关功能
+        System.out.println("功能开发中...");
     }
 
     private void showCardMenu() {
@@ -73,3 +67,4 @@ public class StudentView {
         // TODO: 调用 CampusCardService
     }
 }
+

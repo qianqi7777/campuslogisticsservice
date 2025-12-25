@@ -1,73 +1,43 @@
 package src.service;
 
 import src.dao.ReservationDAO;
-import src.dao.VenueDAO;
 import src.entity.Reservation;
-import src.entity.Venue;
 import java.util.List;
 
 /**
- * ReservationService：场馆预约业务层
- * 负责预约的校验、提交和审核等业务流程封装
+ * 预约服务类
+ * 处理场地预约、审核、查询
  */
 public class ReservationService {
     private ReservationDAO reservationDAO = new ReservationDAO();
-    private VenueDAO venueDAO = new VenueDAO();
+
+    // --- 学生/职工端功能 ---
 
     /**
-     * 新增预约（可在此处加入冲突检查、容量检查等业务规则）
+     * 查询场地状态
+     * @param venueId 场地ID
+     */
+    public void checkVenueStatus(int venueId) {
+        // TODO: 查询场地是否被预约
+    }
+
+    /**
+     * 提交预约申请
      * @param reservation 预约信息
      */
-    public void addReservation(Reservation reservation) {
-        // 参数校验
-        if (reservation == null
-            || reservation.getVenueID() <= 0
-            || reservation.getReserverID() == null
-            || reservation.getResTime() == null
-            || reservation.getDuration() <= 0) {
-            throw new IllegalArgumentException("预约信息不完整");
-        }
-
-        // 场馆可用性检查
-        Venue v = venueDAO.selectById(reservation.getVenueID());
-        if (v == null) {
-            throw new RuntimeException("指定场馆不存在");
-        }
-        if (!"是".equals(v.getIsAvailable())) {
-            throw new RuntimeException("场馆当前不可用");
-        }
-
-        // 简化实现：不做时段冲突检测，直接插入为待审核
-        reservation.setAuditStatus("待审核");
-        reservationDAO.insertReservation(reservation);
+    public void submitReservation(Reservation reservation) {
+        // TODO: 插入预约记录，状态为待审核
     }
 
-    /**
-     * 根据预约者 ID 查询其所有预约记录
-     * @param reserverId 预约者学号
-     * @return 预约记录列表
-     */
-    public List<Reservation> selectByReserverId(String reserverId) {
-        // 调用 DAO 查询
-        return reservationDAO.selectByReserverId(reserverId);
-    }
+    // --- 管理员功能 ---
 
     /**
-     * 更新预约审核状态（管理员使用）
-     * @param resId 预约 ID
-     * @param auditStatus 审核状态
+     * 审核预约申请
+     * @param resId 预约ID
+     * @param pass 是否通过
      */
-    public void updateAuditStatus(int resId, String auditStatus) {
-        // 参数校验
-        if (resId <= 0 || auditStatus == null || auditStatus.trim().isEmpty()) {
-            throw new IllegalArgumentException("参数不合法");
-        }
-        // 状态合法性检查
-        if (!auditStatus.equals("通过") && !auditStatus.equals("拒绝") && !auditStatus.equals("待审核")) {
-            throw new IllegalArgumentException("不支持的审核状态");
-        }
-
-        // 若通过，可考虑把场馆标记为不可用（取决于业务），这里不修改场馆表，仅更新预约状态
-        reservationDAO.updateAuditStatus(resId, auditStatus);
+    public void auditReservation(int resId, boolean pass) {
+        // TODO: 更新预约状态
     }
 }
+

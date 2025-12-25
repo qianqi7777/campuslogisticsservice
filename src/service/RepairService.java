@@ -1,71 +1,81 @@
 package src.service;
 
 import src.dao.RepairDAO;
-import src.dao.StaffDAO;
 import src.entity.Repair;
-import src.entity.Staff;
+import java.util.List;
 
 /**
- * RepairService：维修业务层
- * 封装维修相关的业务逻辑，包括提交维修、分配处理人、以及完成更新等
+ * 报修服务类
+ * 处理报修申请、分配、状态更新、评价等
  */
 public class RepairService {
     private RepairDAO repairDAO = new RepairDAO();
-    private StaffDAO staffDAO = new StaffDAO();
+
+    // --- 学生端功能 ---
 
     /**
-     * 提交新的维修申请（业务层封装）
-     * @param repair 要提交的维修实体
+     * 提交报修单
+     * @param repair 报修信息
      */
-    public void addRepair(Repair repair) {
-        // 基础参数校验
-        if (repair == null || repair.getContent() == null || repair.getContent().trim().isEmpty()
-            || repair.getSubmitterID() == null || repair.getSubmitterID().trim().isEmpty()) {
-            throw new IllegalArgumentException("维修申请信息不完整");
-        }
-        // 默认状态为待处理
-        if (repair.getStatus() == null) {
-            repair.setStatus("待处理");
-        }
-        // 调用 DAO 插入维修记录
-        repairDAO.insertRepair(repair);
+    public void submitRepair(Repair repair) {
+        // TODO: 调用 DAO 插入报修单
     }
 
     /**
-     * 分配维修任务给指定教职工
-     * @param repairId 维修单 ID
-     * @param handlerId 处理人工号
+     * 评价维修 (学生)
+     * @param repairId 维修单ID
+     * @param comment 评价内容
+     * @param score 评分
      */
-    public void assignRepairTask(int repairId, String handlerId) {
-        // 参数校验
-        if (repairId <= 0 || handlerId == null || handlerId.trim().isEmpty()) {
-            throw new IllegalArgumentException("参数不合法");
-        }
-        // 检查处理人工号是否存在
-        Staff s = staffDAO.selectByEid(handlerId);
-        if (s == null) {
-            throw new RuntimeException("指定处理人工号不存在");
-        }
-        // 简单检查维修单是否存在
-        if (repairDAO.selectById(repairId) == null) {
-            throw new RuntimeException("维修单不存在");
-        }
-        // 更新维修单的处理人和状态
-        repairDAO.updateHandlerAndStatus(repairId, handlerId, "处理中");
+    public void evaluateRepair(int repairId, String comment, int score) {
+        // TODO: 调用 EvaluationDAO 插入评价
+    }
+
+    // --- 职工端功能 ---
+
+    /**
+     * 获取待处理/处理中的报修单 (职工)
+     * @param staffId 职工ID
+     * @return 报修单列表
+     */
+    public List<Repair> getAssignedRepairs(String staffId) {
+        // TODO: 调用 DAO 查询
+        return null;
     }
 
     /**
-     * 将维修单标记为已完成
-     * @param repairId 维修单 ID
+     * 更新维修状态 (职工)
+     * @param repairId 维修单ID
+     * @param status 新状态
      */
-    public void updateToCompleted(int repairId) {
-        // 参数校验
-        if (repairId <= 0) throw new IllegalArgumentException("repairId 不合法");
-        // 检查维修单是否存在
-        if (repairDAO.selectById(repairId) == null) {
-            throw new RuntimeException("维修单不存在");
-        }
-        // 更新状态为已完成
-        repairDAO.updateStatus(repairId, "已完成");
+    public void updateRepairStatus(int repairId, String status) {
+        // TODO: 调用 DAO 更新状态
+    }
+
+    /**
+     * 查看评价 (职工)
+     * @param staffId 职工ID
+     */
+    public void viewEvaluations(String staffId) {
+        // TODO: 查询该职工相关维修单的评价
+    }
+
+    // --- 管理员功能 ---
+
+    /**
+     * 统计报修数量 (管理员)
+     */
+    public void getRepairStatistics() {
+        // TODO: 统计各类报修数量
+    }
+
+    /**
+     * 分配维修任务 (管理员)
+     * @param repairId 维修单ID
+     * @param staffId 职工ID
+     */
+    public void assignRepairTask(int repairId, String staffId) {
+        // TODO: 更新维修单的 HandlerID
     }
 }
+
