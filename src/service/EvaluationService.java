@@ -46,7 +46,7 @@ public class EvaluationService {
      * @return Evaluation 对象
      */
     public Evaluation getEvaluationByRepairId(int repairId) {
-        // TODO: 调用 DAO 查询
+        // 调用 DAO 查询
         return evaluationDAO.selectByRepairId(repairId);
     }
 }

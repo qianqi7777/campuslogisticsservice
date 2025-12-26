@@ -29,7 +29,7 @@ public class ReservationDAO {
             // 设置参数
             pstmt.setInt(1, reservation.getVenueID());
             pstmt.setString(2, reservation.getReserverID());
-            pstmt.setDate(3, reservation.getResTime());
+            pstmt.setTimestamp(3, reservation.getResTime());
             pstmt.setInt(4, reservation.getDuration());
             pstmt.setString(5, reservation.getAuditStatus());
             // 执行插入
@@ -69,7 +69,7 @@ public class ReservationDAO {
                 r.setResID(rs.getInt("ResID"));
                 r.setVenueID(rs.getInt("VenueID"));
                 r.setReserverID(rs.getString("ReserverID"));
-                r.setResTime(rs.getDate("ResTime"));
+                r.setResTime(rs.getTimestamp("ResTime"));
                 r.setDuration(rs.getInt("Duration"));
                 r.setAuditStatus(rs.getString("AuditStatus"));
                 return r;
@@ -104,7 +104,7 @@ public class ReservationDAO {
                 r.setResID(rs.getInt("ResID"));
                 r.setVenueID(rs.getInt("VenueID"));
                 r.setReserverID(rs.getString("ReserverID"));
-                r.setResTime(rs.getDate("ResTime"));
+                r.setResTime(rs.getTimestamp("ResTime"));
                 r.setDuration(rs.getInt("Duration"));
                 r.setAuditStatus(rs.getString("AuditStatus"));
                 list.add(r);
@@ -185,7 +185,7 @@ public class ReservationDAO {
                 r.setResID(rs.getInt("ResID"));
                 r.setVenueID(rs.getInt("VenueID"));
                 r.setReserverID(rs.getString("ReserverID"));
-                r.setResTime(rs.getDate("ResTime"));
+                r.setResTime(rs.getTimestamp("ResTime"));
                 r.setDuration(rs.getInt("Duration"));
                 r.setAuditStatus(rs.getString("AuditStatus"));
                 list.add(r);
@@ -217,7 +217,7 @@ public class ReservationDAO {
                 r.setResID(rs.getInt("ResID"));
                 r.setVenueID(rs.getInt("VenueID"));
                 r.setReserverID(rs.getString("ReserverID"));
-                r.setResTime(rs.getDate("ResTime"));
+                r.setResTime(rs.getTimestamp("ResTime"));
                 r.setDuration(rs.getInt("Duration"));
                 r.setAuditStatus(rs.getString("AuditStatus"));
                 list.add(r);

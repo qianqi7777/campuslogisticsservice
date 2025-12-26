@@ -1,6 +1,6 @@
 package src.entity;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 /**
  * Reservation 实体类
@@ -9,7 +9,7 @@ import java.sql.Date;
  *  - resID: 预约 ID（主键）
  *  - venueID: 关联的场馆 ID
  *  - reserverID: 预约者学号
- *  - resTime: 预约日期
+ *  - resTime: 预约时间
  *  - duration: 预约时长（单位可为小时等）
  *  - auditStatus: 审核状态（待审核/通过/拒绝）
  */
@@ -20,8 +20,8 @@ public class Reservation {
     private int venueID;
     /** 预约者学号 */
     private String reserverID;
-    /** 预约日期 */
-    private Date resTime;
+    /** 预约时间 */
+    private Timestamp resTime;
     /** 预约时长 */
     private int duration;
     /** 审核状态 */
@@ -53,13 +53,13 @@ public class Reservation {
     public void setVenueID(int venueID) { this.venueID = venueID; }
 
     /**
-     * 获取预约者 ID
-     * @return 预约者 ID
+     * 获取预约者学号
+     * @return 预约者学号
      */
     public String getReserverID() { return reserverID; }
     /**
-     * 设置预约者 ID
-     * @param reserverID 预约者 ID
+     * 设置预约者学号
+     * @param reserverID 预约者学号
      */
     public void setReserverID(String reserverID) { this.reserverID = reserverID; }
 
@@ -67,12 +67,12 @@ public class Reservation {
      * 获取预约时间
      * @return 预约时间
      */
-    public Date getResTime() { return resTime; }
+    public Timestamp getResTime() { return resTime; }
     /**
      * 设置预约时间
      * @param resTime 预约时间
      */
-    public void setResTime(Date resTime) { this.resTime = resTime; }
+    public void setResTime(Timestamp resTime) { this.resTime = resTime; }
 
     /**
      * 获取预约时长

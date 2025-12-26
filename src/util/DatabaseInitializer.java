@@ -126,8 +126,8 @@ public class DatabaseInitializer {
         stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Reservation (" +
                 "ResID INT PRIMARY KEY AUTO_INCREMENT COMMENT '预约ID'," +
                 "VenueID INT NOT NULL COMMENT '关联场馆ID'," +
-                "ReserverID VARCHAR(20) COMMENT '预约人ID（学号或工号）'," +
-                "ResTime DATE NOT NULL COMMENT '预约日期'," +
+                "ReserverID VARCHAR(20) COMMENT '预约人ID（学号）'," +
+                "ResTime DATETIME NOT NULL COMMENT '预约时间'," +
                 "Duration INT NOT NULL COMMENT '使用时长' CHECK(Duration>0)," +
                 "AuditStatus VARCHAR(10) NOT NULL DEFAULT '待审核' COMMENT '审核状态'," +
                 "FOREIGN KEY (VenueID) REFERENCES Venue(VenueID) ON DELETE CASCADE" +
