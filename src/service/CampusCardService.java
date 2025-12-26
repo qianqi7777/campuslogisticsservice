@@ -90,6 +90,25 @@ public class CampusCardService {
         System.out.println("已提交挂失请求，卡号: " + card.getCardID());
     }
 
+    /**
+     * 解除挂失 (用户自行解除)
+     * @param userId 用户ID
+     * @param userType 用户类型
+     */
+    public void cancelLoss(String userId, String userType) {
+        CampusCard card = cardDAO.selectByUserIdAndType(userId, userType);
+        if (card == null) {
+            System.out.println("您尚未绑定校园卡。");
+            return;
+        }
+        if (!"挂失".equals(card.getStatus())) {
+            System.out.println("您的校园卡当前未处于挂失状态。");
+            return;
+        }
+        cardDAO.updateStatusByCardId(card.getCardID(), "正常");
+        System.out.println("已解除挂失，卡号: " + card.getCardID());
+    }
+
     // --- 管理员功能 ---
 
     /**

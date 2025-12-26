@@ -181,7 +181,8 @@ public class StaffView {
             System.out.println("1. 查询余额");
             System.out.println("2. 充值");
             System.out.println("3. 挂失");
-            System.out.println("4. 注册校园卡");
+            System.out.println("4. 解除挂失");
+            System.out.println("5. 注册校园卡");
             System.out.println("0. 返回");
             System.out.print("请选择：");
 
@@ -216,6 +217,10 @@ public class StaffView {
                     cardService.reportLoss(staff.getEid(), "staff");
                     break;
                 case "4":
+                    System.out.println("正在解除挂失...");
+                    cardService.cancelLoss(staff.getEid(), "staff");
+                    break;
+                case "5":
                     System.out.print("请输入新卡号：");
                     String newCid = scanner.nextLine();
                     if (newCid.trim().isEmpty()) {
