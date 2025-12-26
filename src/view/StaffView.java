@@ -8,7 +8,7 @@ import src.service.CampusCardService;
 import src.service.VenueService;
 import src.entity.Venue;
 import src.entity.Reservation;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 /**
  * 职工控制台视图
@@ -107,7 +107,7 @@ public class StaffView {
                 case "2":
                     System.out.print("请输入场地ID：");
                     int venueId = Integer.parseInt(scanner.nextLine());
-                    System.out.print("请输入预约日期 (yyyy-MM-dd)：");
+                    System.out.print("请输入预约时间 (yyyy-MM-dd HH:mm:ss)：");
                     String dateStr = scanner.nextLine();
                     System.out.print("请输入时长 (小时)：");
                     int duration = Integer.parseInt(scanner.nextLine());
@@ -115,7 +115,7 @@ public class StaffView {
                     Reservation r = new Reservation();
                     r.setVenueID(venueId);
                     r.setReserverID(staff.getEid());
-                    r.setResTime(Date.valueOf(dateStr));
+                    r.setResTime(Timestamp.valueOf(dateStr));
                     r.setDuration(duration);
                     reservationService.submitReservation(r);
                     System.out.println("预约申请已提交，等待审核。");
