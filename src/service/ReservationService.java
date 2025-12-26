@@ -52,6 +52,48 @@ public class ReservationService {
         return reservationDAO.selectByReserver(userId);
     }
 
+    /**
+     * 获取所有可用场地
+     * @return 场地列表
+     */
+    public List<Venue> getAvailableVenues() {
+        return venueDAO.selectAvailableVenues();
+    }
+
+    /**
+     * 提交预约申请 (带校验)
+     * @param reservation 预约信息
+     * @return 提交结果信息
+     */
+    public String submitReservationWithCheck(Reservation reservation) {
+        // 1. 校验时间是否在未来
+        long currentTime = System.currentTimeMillis();
+        if (reservation.getResTime().getTime() <= currentTime) {
+            return "预约失败：预约时间必须是将来时间。";
+        }
+
+        // 2. 计算结束时间
+        long endTimeMillis = reservation.getResTime().getTime() + (long) reservation.getDuration() * 60 * 60 * 1000;
+        java.sql.Timestamp endTime = new java.sql.Timestamp(endTimeMillis);
+
+        // 3. 检查冲突
+        if (reservationDAO.checkConflict(reservation.getVenueID(), reservation.getResTime(), endTime)) {
+            return "预约失败：该时间段内该场馆已被占用。";
+        }
+
+        // 4. 提交
+        reservation.setAuditStatus("待审核");
+        reservationDAO.insertReservation(reservation);
+        return "预约申请已提交，等待审核。";
+    }
+
+    /**
+     * 清理过期预约
+     */
+    public void cleanExpiredReservations() {
+        reservationDAO.deleteExpiredReservations();
+    }
+
     // --- 管理员功能 ---
 
     /**

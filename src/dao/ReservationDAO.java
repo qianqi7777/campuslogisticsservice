@@ -229,4 +229,58 @@ public class ReservationDAO {
         }
         return list;
     }
+
+    /**
+     * 检查预约冲突
+     * @param venueId 场馆ID
+     * @param startTime 预约开始时间
+     * @param endTime 预约结束时间
+     * @return 是否有冲突（true表示有冲突）
+     */
+    public boolean checkConflict(int venueId, Timestamp startTime, Timestamp endTime) {
+        // 冲突条件：已存在预约的开始时间 < 新预约结束时间 且 已存在预约的结束时间 > 新预约开始时间
+        // 且状态不是"拒绝"
+        String sql = "SELECT COUNT(*) FROM Reservation WHERE VenueID = ? AND AuditStatus != '拒绝' " +
+                     "AND ResTime < ? AND DATE_ADD(ResTime, INTERVAL Duration HOUR) > ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, venueId);
+            pstmt.setTimestamp(2, endTime);
+            pstmt.setTimestamp(3, startTime);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return false;
+    }
+
+    /**
+     * 删除过期预约（结束时间早于当前时间）
+     */
+    public void deleteExpiredReservations() {
+        String sql = "DELETE FROM Reservation WHERE DATE_ADD(ResTime, INTERVAL Duration HOUR) < NOW()";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("已清理 " + rows + " 条过期预约记录。");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt);
+        }
+    }
 }

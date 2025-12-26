@@ -95,10 +95,14 @@ public class StudentView {
     }
 
     private void showReservationMenu() {
+        // 进入菜单时自动清理过期预约
+        reservationService.cleanExpiredReservations();
+
         while (true) {
             System.out.println("\n--- 预约服务 ---");
-            System.out.println("1. 查询场地状态");
-            System.out.println("2. 提交预约申请");
+            System.out.println("1. 查看可用场地");
+            System.out.println("2. 查询场地状态 (指定ID)");
+            System.out.println("3. 提交预约申请");
             System.out.println("0. 返回");
             System.out.print("请选择：");
 
@@ -107,25 +111,68 @@ public class StudentView {
 
             switch (choice) {
                 case "1":
-                    System.out.print("请输入场地ID：");
-                    int vid = Integer.parseInt(scanner.nextLine());
-                    reservationService.checkVenueStatus(vid);
+                    java.util.List<src.entity.Venue> venues = reservationService.getAvailableVenues();
+                    System.out.println("--- 可用场地列表 ---");
+                    if (venues.isEmpty()) {
+                        System.out.println("当前没有可用场地。");
+                    } else {
+                        for (src.entity.Venue v : venues) {
+                            System.out.printf("ID: %d, 名称: %s, 容量: %d, 位置: %s\n",
+                                    v.getVenueID(), v.getVenueName(), v.getCapacity(), v.getLocation());
+                        }
+                    }
                     break;
                 case "2":
                     System.out.print("请输入场地ID：");
-                    int venueId = Integer.parseInt(scanner.nextLine());
-                    System.out.print("请输入预约时间 (yyyy-MM-dd HH:mm:ss)：");
-                    String dateStr = scanner.nextLine();
-                    System.out.print("请输入时长 (小时)：");
-                    int duration = Integer.parseInt(scanner.nextLine());
+                    try {
+                        int vid = Integer.parseInt(scanner.nextLine());
+                        reservationService.checkVenueStatus(vid);
+                    } catch (NumberFormatException e) {
+                        System.out.println("输入格式错误。");
+                    }
+                    break;
+                case "3":
+                    System.out.print("请输入场地ID：");
+                    int venueId;
+                    try {
+                        venueId = Integer.parseInt(scanner.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("ID格式错误。");
+                        break;
+                    }
 
-                    Reservation r = new Reservation();
-                    r.setVenueID(venueId);
-                    r.setReserverID(student.getSid());
-                    r.setResTime(Timestamp.valueOf(dateStr));
-                    r.setDuration(duration);
-                    reservationService.submitReservation(r);
-                    System.out.println("预约申请已提交，等待审核。");
+                    // 显示当前时间作为样例
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String nowStr = sdf.format(new java.util.Date());
+                    System.out.println("当前时间: " + nowStr);
+                    System.out.print("请输入预约时间 (格式: yyyy-MM-dd HH:mm:ss)：");
+                    String dateStr = scanner.nextLine();
+
+                    System.out.print("请输入时长 (小时)：");
+                    int duration;
+                    try {
+                        duration = Integer.parseInt(scanner.nextLine());
+                        if (duration <= 0) {
+                            System.out.println("时长必须大于0。");
+                            break;
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("时长格式错误。");
+                        break;
+                    }
+
+                    try {
+                        Reservation r = new Reservation();
+                        r.setVenueID(venueId);
+                        r.setReserverID(student.getSid());
+                        r.setResTime(Timestamp.valueOf(dateStr));
+                        r.setDuration(duration);
+
+                        String result = reservationService.submitReservationWithCheck(r);
+                        System.out.println(result);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("时间格式错误，请参考样例格式。");
+                    }
                     break;
                 default:
                     System.out.println("无效选项");
