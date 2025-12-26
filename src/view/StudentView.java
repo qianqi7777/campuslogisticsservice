@@ -139,6 +139,7 @@ public class StudentView {
             System.out.println("1. 查询余额");
             System.out.println("2. 充值");
             System.out.println("3. 挂失");
+            System.out.println("4. 注册校园卡");
             System.out.println("0. 返回");
             System.out.print("请选择：");
 
@@ -172,6 +173,25 @@ public class StudentView {
                 case "3":
                     System.out.println("正在提交挂失请求...");
                     cardService.reportLoss(student.getSid(), "student");
+                    break;
+                case "4":
+                    System.out.print("请输入新卡号：");
+                    String newCid = scanner.nextLine();
+                    if (newCid.trim().isEmpty()) {
+                        System.out.println("卡号不能为空");
+                        break;
+                    }
+                    src.entity.CampusCard newCard = new src.entity.CampusCard();
+                    newCard.setCardID(newCid);
+                    newCard.setUserID(student.getSid());
+                    newCard.setUserType("student");
+                    newCard.setBalance(java.math.BigDecimal.ZERO);
+                    newCard.setStatus("正常");
+                    if (cardService.addCard(newCard)) {
+                        System.out.println("校园卡注册成功！");
+                    } else {
+                        System.out.println("校园卡注册失败（可能卡号已存在或您已绑定校园卡）。");
+                    }
                     break;
                 default:
                     System.out.println("无效选项");
