@@ -2,12 +2,14 @@ package src.view;
 
 import src.entity.Staff;
 import java.util.Scanner;
+import java.util.List;
 import src.service.RepairService;
 import src.service.ReservationService;
 import src.service.CampusCardService;
 import src.service.VenueService;
 import src.entity.Venue;
 import src.entity.Reservation;
+import src.entity.Repair;
 import java.sql.Timestamp;
 
 /**
@@ -68,14 +70,39 @@ public class StaffView {
 
             switch (choice) {
                 case "1":
-                    repairService.getAssignedRepairs(staff.getEid());
+                    List<Repair> list = repairService.getAssignedRepairs(staff.getEid());
+                    System.out.println("--- 分配给我的报修单 ---");
+                    if (list.isEmpty()) {
+                        System.out.println("暂无分配的任务。");
+                    } else {
+                        for (Repair r : list) {
+                            System.out.printf("ID: %d, 内容: %s, 状态: %s, 提交时间: %s\n",
+                                r.getRepairID(), r.getContent(), r.getStatus(), r.getSubmitTime());
+                        }
+                    }
                     break;
                 case "2":
+                    List<Repair> myList = repairService.getAssignedRepairs(staff.getEid());
+                    System.out.println("--- 分配给我的报修单 ---");
+                    if (myList.isEmpty()) {
+                        System.out.println("暂无分配的任务，无法更新状态。");
+                        break;
+                    }
+                    for (Repair r : myList) {
+                        System.out.printf("ID: %d, 内容: %s, 状态: %s, 提交时间: %s\n",
+                            r.getRepairID(), r.getContent(), r.getStatus(), r.getSubmitTime());
+                    }
+
                     System.out.print("请输入维修单ID：");
-                    int rid = Integer.parseInt(scanner.nextLine());
-                    System.out.print("请输入新状态：");
-                    String status = scanner.nextLine();
-                    repairService.updateRepairStatus(rid, status);
+                    try {
+                        int rid = Integer.parseInt(scanner.nextLine());
+                        System.out.print("请输入新状态 (如: 处理中/已完成)：");
+                        String status = scanner.nextLine();
+                        repairService.updateRepairStatus(rid, status);
+                        System.out.println("状态更新成功。");
+                    } catch (NumberFormatException e) {
+                        System.out.println("ID格式错误。");
+                    }
                     break;
                 case "3":
                     repairService.viewEvaluations(staff.getEid());
@@ -204,9 +231,22 @@ public class StaffView {
                     venueService.addVenue(v);
                     break;
                 case "2":
+                    // 先列出所有场馆
+                    List<Venue> venues = venueService.getAllVenues();
+                    System.out.println("--- 所有场馆 ---");
+                    for (Venue venue : venues) {
+                        System.out.printf("ID: %d, 名称: %s, 容量: %d, 位置: %s, 可用: %s\n",
+                            venue.getVenueID(), venue.getVenueName(), venue.getCapacity(), venue.getLocation(), venue.getIsAvailable());
+                    }
+
                     System.out.print("请输入要删除的场馆ID：");
-                    int vid = Integer.parseInt(scanner.nextLine());
-                    venueService.deleteVenue(vid);
+                    try {
+                        int vid = Integer.parseInt(scanner.nextLine());
+                        venueService.deleteVenue(vid);
+                        System.out.println("场馆删除操作完成。");
+                    } catch (NumberFormatException e) {
+                        System.out.println("ID格式错误。");
+                    }
                     break;
                 case "3":
                     java.util.List<Venue> list = venueService.getAllVenues();

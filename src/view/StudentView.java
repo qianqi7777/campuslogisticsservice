@@ -8,6 +8,7 @@ import src.entity.Repair;
 import src.entity.Reservation;
 import java.sql.Timestamp;
 import java.util.Scanner;
+import java.util.List;
 
 /**
  * 学生控制台视图：StudentView
@@ -80,6 +81,17 @@ public class StudentView {
                     System.out.println("报修单已提交，您的报修单ID为：" + repairId);
                     break;
                 case "2":
+                    // 列出该学生的维修单
+                    List<Repair> myRepairs = repairService.getRepairsByStudent(student.getSid());
+                    System.out.println("--- 我的维修单 ---");
+                    if (myRepairs.isEmpty()) {
+                        System.out.println("您没有提交过维修单。");
+                        break;
+                    }
+                    for (Repair repair : myRepairs) {
+                         System.out.printf("ID: %d, 内容: %s, 状态: %s\n", repair.getRepairID(), repair.getContent(), repair.getStatus());
+                    }
+
                     System.out.print("请输入维修单ID：");
                     int rid = Integer.parseInt(scanner.nextLine());
                     System.out.print("请输入评分 (1-5)：");

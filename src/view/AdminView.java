@@ -6,6 +6,7 @@ import src.service.UserService;
 import src.service.RepairService;
 import src.service.ReservationService;
 import src.service.CampusCardService;
+import src.entity.Reservation;
 import java.util.List;
 import java.util.Scanner;
 
@@ -212,6 +213,10 @@ public class AdminView {
                     // 简单示例：输入ID分配
                     System.out.print("请输入维修单ID：");
                     int rid = Integer.parseInt(scanner.nextLine());
+
+                    // 显示职工列表供选择
+                    listStaff();
+
                     System.out.print("请输入指派的职工工号：");
                     String eid = scanner.nextLine();
                     repairService.assignRepairTask(rid, eid);
@@ -243,6 +248,22 @@ public class AdminView {
 
             switch (choice) {
                 case "1":
+                    // 列出待审核预约
+                    List<Reservation> allRes = reservationService.getAllReservations();
+                    System.out.println("--- 待审核预约 ---");
+                    boolean hasPending = false;
+                    for (Reservation r : allRes) {
+                        if ("待审核".equals(r.getAuditStatus())) {
+                            System.out.printf("ID: %d, 场馆ID: %d, 预约人: %s, 时间: %s\n",
+                                r.getResID(), r.getVenueID(), r.getReserverID(), r.getResTime());
+                            hasPending = true;
+                        }
+                    }
+                    if (!hasPending) {
+                        System.out.println("暂无待审核预约。");
+                        break;
+                    }
+
                     System.out.print("请输入预约ID：");
                     int rid = Integer.parseInt(scanner.nextLine());
                     System.out.print("是否通过 (y/n)：");
