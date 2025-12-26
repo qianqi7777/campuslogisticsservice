@@ -14,13 +14,15 @@ public class RepairDAO {
     /**
      * 插入一条维修申请
      * @param repair 要插入的 Repair 实体
+     * @return 生成的维修单ID
      */
-    public void insertRepair(Repair repair) {
+    public int insertRepair(Repair repair) {
         // SQL 插入语句
         String sql = "INSERT INTO Repair (Content, SubmitTime, Status, SubmitterID, HandlerID) VALUES (?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
+        int generatedId = -1;
         try {
             // 获取数据库连接
             conn = DBUtil.getConnection();
@@ -42,7 +44,8 @@ public class RepairDAO {
             // 获取自增主键
             rs = pstmt.getGeneratedKeys();
             if (rs != null && rs.next()) {
-                repair.setRepairID(rs.getInt(1));
+                generatedId = rs.getInt(1);
+                repair.setRepairID(generatedId);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -51,6 +54,7 @@ public class RepairDAO {
             // 关闭资源
             DBUtil.close(conn, pstmt, rs);
         }
+        return generatedId;
     }
 
     /**

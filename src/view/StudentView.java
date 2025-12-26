@@ -76,7 +76,8 @@ public class StudentView {
                     r.setContent(content);
                     r.setSubmitterID(student.getSid());
                     r.setStatus("待处理");
-                    repairService.submitRepair(r);
+                    int repairId = repairService.submitRepair(r);
+                    System.out.println("报修单已提交，您的报修单ID为：" + repairId);
                     break;
                 case "2":
                     System.out.print("请输入维修单ID：");

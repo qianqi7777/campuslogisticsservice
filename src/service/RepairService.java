@@ -22,9 +22,10 @@ public class RepairService {
     /**
      * 提交报修单
      * @param repair 报修信息
+     * @return 维修单ID
      */
-    public void submitRepair(Repair repair) {
-        repairDAO.insertRepair(repair);
+    public int submitRepair(Repair repair) {
+        return repairDAO.insertRepair(repair);
     }
 
     /**
