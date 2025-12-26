@@ -268,6 +268,7 @@ public class AdminView {
             System.out.println("\n--- 校园卡服务 ---");
             System.out.println("1. 挂失/恢复校园卡");
             System.out.println("2. 查看所有校园卡");
+            System.out.println("3. 添加校园卡");
             System.out.println("0. 返回");
             System.out.print("请选择：");
 
@@ -288,6 +289,29 @@ public class AdminView {
                     for (src.entity.CampusCard c : list) {
                         System.out.printf("卡号: %s, 用户: %s, 类型: %s, 余额: %.2f, 状态: %s\n",
                             c.getCardID(), c.getUserID(), c.getUserType(), c.getBalance(), c.getStatus());
+                    }
+                    break;
+                case "3":
+                    System.out.print("请输入卡号：");
+                    String newCid = scanner.nextLine();
+                    System.out.print("请输入用户ID (学号/工号)：");
+                    String uid = scanner.nextLine();
+                    System.out.print("请输入用户类型 (student/staff)：");
+                    String uType = scanner.nextLine();
+                    System.out.print("请输入初始余额：");
+                    java.math.BigDecimal balance = new java.math.BigDecimal(scanner.nextLine());
+
+                    src.entity.CampusCard newCard = new src.entity.CampusCard();
+                    newCard.setCardID(newCid);
+                    newCard.setUserID(uid);
+                    newCard.setUserType(uType);
+                    newCard.setBalance(balance);
+                    newCard.setStatus("正常");
+
+                    if (cardService.addCard(newCard)) {
+                        System.out.println("添加校园卡成功！");
+                    } else {
+                        System.out.println("添加校园卡失败。");
                     }
                     break;
                 default:

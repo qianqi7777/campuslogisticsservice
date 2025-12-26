@@ -34,6 +34,22 @@ public class CampusCardService {
     }
 
     /**
+     * 查询账户信息 (指定类型)
+     * @param userId 用户ID
+     * @param userType 用户类型
+     * @return 校园卡信息
+     */
+    public CampusCard getCardInfo(String userId, String userType) {
+        CampusCard card = cardDAO.selectByUserIdAndType(userId, userType);
+        if (card != null) {
+            System.out.println("卡号: " + card.getCardID() + ", 余额: " + card.getBalance() + ", 状态: " + card.getStatus());
+        } else {
+            System.out.println("未找到校园卡信息");
+        }
+        return card;
+    }
+
+    /**
      * 充值
      * @param cardId 卡号
      * @param amount 金额
@@ -57,6 +73,21 @@ public class CampusCardService {
     public void reportLoss(String cardId) {
         cardDAO.updateStatusByCardId(cardId, "挂失");
         System.out.println("已提交挂失请求");
+    }
+
+    /**
+     * 挂失 (用户自行挂失，无需输入卡号)
+     * @param userId 用户ID
+     * @param userType 用户类型
+     */
+    public void reportLoss(String userId, String userType) {
+        CampusCard card = cardDAO.selectByUserIdAndType(userId, userType);
+        if (card == null) {
+            System.out.println("您尚未绑定校园卡，无法挂失。");
+            return;
+        }
+        cardDAO.updateStatusByCardId(card.getCardID(), "挂失");
+        System.out.println("已提交挂失请求，卡号: " + card.getCardID());
     }
 
     // --- 管理员功能 ---
@@ -90,5 +121,23 @@ public class CampusCardService {
         } else {
             System.out.println("删除失败");
         }
+    }
+
+    /**
+     * 添加校园卡 (管理员)
+     * @param card 校园卡信息
+     * @return 是否成功
+     */
+    public boolean addCard(CampusCard card) {
+        if (cardDAO.selectByCardId(card.getCardID()) != null) {
+            System.out.println("卡号已存在");
+            return false;
+        }
+        // 检查该用户是否已有卡
+        if (cardDAO.selectByUserIdAndType(card.getUserID(), card.getUserType()) != null) {
+            System.out.println("该用户已绑定校园卡");
+            return false;
+        }
+        return cardDAO.insertCard(card);
     }
 }

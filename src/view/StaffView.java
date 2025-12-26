@@ -189,19 +189,30 @@ public class StaffView {
 
             switch (choice) {
                 case "1":
-                    cardService.getCardInfo(staff.getEid());
+                    cardService.getCardInfo(staff.getEid(), "staff");
                     break;
                 case "2":
-                    System.out.print("请输入卡号：");
+                    System.out.print("请输入卡号 (回车默认充值本卡)：");
                     String cid = scanner.nextLine();
+                    if (cid.trim().isEmpty()) {
+                        src.entity.CampusCard myCard = cardService.getCardInfo(staff.getEid(), "staff");
+                        if (myCard != null) {
+                            cid = myCard.getCardID();
+                        } else {
+                            break;
+                        }
+                    }
                     System.out.print("请输入金额：");
-                    java.math.BigDecimal amount = new java.math.BigDecimal(scanner.nextLine());
-                    cardService.recharge(cid, amount);
+                    try {
+                        java.math.BigDecimal amount = new java.math.BigDecimal(scanner.nextLine());
+                        cardService.recharge(cid, amount);
+                    } catch (NumberFormatException e) {
+                        System.out.println("金额格式错误");
+                    }
                     break;
                 case "3":
-                    System.out.print("请输入卡号：");
-                    String cid2 = scanner.nextLine();
-                    cardService.reportLoss(cid2);
+                    System.out.println("正在提交挂失请求...");
+                    cardService.reportLoss(staff.getEid(), "staff");
                     break;
                 default:
                     System.out.println("无效选项");
