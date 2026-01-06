@@ -1,265 +1,359 @@
 package src.view;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 import src.entity.Student;
+import src.entity.Repair;
+import src.entity.Reservation;
+import src.entity.Venue;
+import src.entity.CampusCard;
 import src.service.RepairService;
 import src.service.ReservationService;
 import src.service.CampusCardService;
-import src.entity.Repair;
-import src.entity.Reservation;
-import java.sql.Timestamp;
-import java.util.Scanner;
-import java.util.List;
 
 /**
- * 学生控制台视图：StudentView
- * 提供学生用户可以执行的操作菜单（当前为占位示例）
+ * 学生控制台视图：Swing图形化界面
  */
-public class StudentView {
+public class StudentView extends JFrame {
     private Student student;
-    private Scanner scanner = new Scanner(System.in);
     private RepairService repairService = new RepairService();
     private ReservationService reservationService = new ReservationService();
     private CampusCardService cardService = new CampusCardService();
 
+    private DefaultTableModel repairTableModel;
+    private DefaultTableModel reservationTableModel;
+    private DefaultTableModel venueTableModel;
+    private JLabel cardInfoLabel;
+
     public StudentView(Student student) {
         this.student = student;
+        setTitle("学生服务系统 - " + student.getSName());
+        setSize(900, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        initUI();
     }
 
-    /**
-     * 显示学生主菜单并响应输入（实际功能由 Service 层实现并在此调用）
-     */
-    public void show() {
-        while (true) {
-            // 打印学生菜单
-            System.out.println("\n=== 学生主菜单 (" + student.getSName() + ") ===");
-            System.out.println("1. 报修服务 (提交/评价)");
-            System.out.println("2. 预约服务 (查询/申请)");
-            System.out.println("3. 校园卡服务 (查询/充值/挂失)");
-            System.out.println("0. 注销登录");
-            System.out.print("请选择：");
+    private void initUI() {
+        JTabbedPane tabbedPane = new JTabbedPane();
 
-            // 读取用户输入
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
+        tabbedPane.addTab("主页", createHomePanel());
+        tabbedPane.addTab("报修服务", createRepairPanel());
+        tabbedPane.addTab("场地预约", createReservationPanel());
+        tabbedPane.addTab("校园卡", createCardPanel());
 
-            switch (choice) {
-                case "1":
-                    showRepairMenu();
-                    break;
-                case "2":
-                    showReservationMenu();
-                    break;
-                case "3":
-                    showCardMenu();
-                    break;
-                default:
-                    System.out.println("无效选项");
+        this.add(tabbedPane);
+    }
+
+    private JPanel createHomePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JLabel welcomeLabel = new JLabel("<html><div style='text-align: center;'><h2>欢迎同学: " + student.getSName() + "</h2><p>学号: " + student.getSid() + "</p><p>学院: " + student.getCollege() + "</p></div></html>", SwingConstants.CENTER);
+        panel.add(welcomeLabel, BorderLayout.CENTER);
+
+        JButton logoutBtn = new JButton("注销登录");
+        logoutBtn.addActionListener(e -> {
+            new LoginView().setVisible(true);
+            this.dispose();
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(logoutBtn);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    // --- Repair Panel ---
+    private JPanel createRepairPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        // Repair List
+        String[] columns = {"维修单ID", "内容", "提交时间", "状态", "评分", "评价"};
+        repairTableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(repairTableModel);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        // Tools
+        JPanel tools = new JPanel();
+        JButton refreshBtn = new JButton("刷新我的报修");
+        JButton submitBtn = new JButton("提交报修");
+        JButton evalBtn = new JButton("评价");
+
+        refreshBtn.addActionListener(e -> loadRepairData());
+        submitBtn.addActionListener(e -> showSubmitRepairDialog());
+        evalBtn.addActionListener(e -> showEvaluateDialog(table));
+
+        tools.add(refreshBtn);
+        tools.add(submitBtn);
+        tools.add(evalBtn);
+        panel.add(tools, BorderLayout.NORTH);
+
+        loadRepairData();
+        return panel;
+    }
+
+    private void loadRepairData() {
+        repairTableModel.setRowCount(0);
+        List<Repair> list = repairService.getRepairsByStudent(student.getSid());
+        for (Repair r : list) {
+            // Need to fetch evaluation if exists, currently just showing empty or basic info
+            // Since evaluation is stored separately, we might not have it here easily without querying.
+            // For simplicity, we just list the repair info. Evaluation can be shown if we enhanced the DAO/Service to join tables or query.
+            // But I'll leave score/comment empty in the table for now or implement a quick check if needed.
+            // RepairService has getEvaluation(repairId).
+            src.entity.Evaluation eval = repairService.getEvaluation(r.getRepairID());
+            String score = (eval != null) ? String.valueOf(eval.getScore()) : "-";
+            String comment = (eval != null) ? eval.getComment() : "-";
+
+            repairTableModel.addRow(new Object[]{
+                r.getRepairID(), r.getContent(), r.getSubmitTime(), r.getStatus(), score, comment
+            });
+        }
+    }
+
+    private void showSubmitRepairDialog() {
+        String content = JOptionPane.showInputDialog(this, "请输入报修内容描述:");
+        if (content != null && !content.trim().isEmpty()) {
+            Repair r = new Repair();
+            r.setContent(content.trim());
+            r.setSubmitTime(new Timestamp(System.currentTimeMillis()));
+            r.setStatus("待处理");
+            r.setSubmitterID(student.getSid());
+
+            if (repairService.submitRepair(r) > 0) {
+                JOptionPane.showMessageDialog(this, "报修提交成功");
+                loadRepairData();
+            } else {
+                JOptionPane.showMessageDialog(this, "提交失败");
             }
         }
     }
 
-    private void showRepairMenu() {
-        while (true) {
-            System.out.println("\n--- 报修服务 ---");
-            System.out.println("1. 提交报修单");
-            System.out.println("2. 评价维修");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
-
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
-
-            switch (choice) {
-                case "1":
-                    System.out.print("请输入报修内容：");
-                    String content = scanner.nextLine();
-                    Repair r = new Repair();
-                    r.setContent(content);
-                    r.setSubmitterID(student.getSid());
-                    r.setStatus("待处理");
-                    int repairId = repairService.submitRepair(r);
-                    System.out.println("报修单已提交，您的报修单ID为：" + repairId);
-                    break;
-                case "2":
-                    // 列出该学生的维修单
-                    List<Repair> myRepairs = repairService.getRepairsByStudent(student.getSid());
-                    System.out.println("--- 我的维修单 ---");
-                    if (myRepairs.isEmpty()) {
-                        System.out.println("您没有提交过维修单。");
-                        break;
-                    }
-                    for (Repair repair : myRepairs) {
-                         System.out.printf("ID: %d, 内容: %s, 状态: %s\n", repair.getRepairID(), repair.getContent(), repair.getStatus());
-                    }
-
-                    System.out.print("请输入维修单ID：");
-                    int rid = Integer.parseInt(scanner.nextLine());
-                    System.out.print("请输入评分 (1-5)：");
-                    int score = Integer.parseInt(scanner.nextLine());
-                    System.out.print("请输入评价内容：");
-                    String comment = scanner.nextLine();
-                    repairService.evaluateRepair(rid, comment, score);
-                    break;
-                default:
-                    System.out.println("无效选项");
+    private void showEvaluateDialog(JTable table) {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            String status = (String) repairTableModel.getValueAt(row, 3);
+            if (!"已完成".equals(status)) {
+                JOptionPane.showMessageDialog(this, "只有已完成的维修单可以评价");
+                return;
             }
+            // Check if already evaluated
+            String existingScore = (String) repairTableModel.getValueAt(row, 4);
+            if (!"-".equals(existingScore)) {
+                JOptionPane.showMessageDialog(this, "该维修单已评价");
+                return;
+            }
+
+            int rid = (int) repairTableModel.getValueAt(row, 0);
+
+            JDialog d = new JDialog(this, "评价维修", true);
+            d.setSize(300, 200);
+            d.setLayout(new GridLayout(3, 2));
+            d.setLocationRelativeTo(this);
+
+            JTextField scoreF = new JTextField();
+            JTextField commentF = new JTextField();
+
+            d.add(new JLabel("评分 (1-5):")); d.add(scoreF);
+            d.add(new JLabel("评价内容:")); d.add(commentF);
+
+            JButton ok = new JButton("提交");
+            ok.addActionListener(e -> {
+                try {
+                    int s = Integer.parseInt(scoreF.getText());
+                    if (s < 1 || s > 5) throw new NumberFormatException();
+                    repairService.evaluateRepair(rid, commentF.getText(), s);
+                    JOptionPane.showMessageDialog(d, "评价成功");
+                    d.dispose();
+                    loadRepairData();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(d, "评分请输入1-5的整数");
+                }
+            });
+            d.add(ok);
+            d.setVisible(true);
+
+        } else {
+            JOptionPane.showMessageDialog(this, "请选择一个维修单");
         }
     }
 
-    private void showReservationMenu() {
-        // 进入菜单时自动清理过期预约
-        reservationService.cleanExpiredReservations();
+    // --- Reservation Panel ---
+    private JPanel createReservationPanel() {
+        JPanel mainPanel = new JPanel(new BorderLayout());
 
-        while (true) {
-            System.out.println("\n--- 预约服务 ---");
-            System.out.println("1. 查看可用场地");
-            System.out.println("2. 查询场地状态 (指定ID)");
-            System.out.println("3. 提交预约申请");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
+        // Left: Venue List
+        JPanel venuePanel = new JPanel(new BorderLayout());
+        venuePanel.setBorder(BorderFactory.createTitledBorder("可用场馆"));
+        String[] vCols = {"ID", "名称", "容量", "位置"};
+        venueTableModel = new DefaultTableModel(vCols, 0);
+        JTable venueTable = new JTable(venueTableModel);
+        venuePanel.add(new JScrollPane(venueTable), BorderLayout.CENTER);
 
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
+        JButton refreshVenue = new JButton("刷新场馆");
+        refreshVenue.addActionListener(e -> loadVenueData());
+        venuePanel.add(refreshVenue, BorderLayout.SOUTH);
 
-            switch (choice) {
-                case "1":
-                    java.util.List<src.entity.Venue> venues = reservationService.getAvailableVenues();
-                    System.out.println("--- 可用场地列表 ---");
-                    if (venues.isEmpty()) {
-                        System.out.println("当前没有可用场地。");
+        // Right: My Reservations
+        JPanel resPanel = new JPanel(new BorderLayout());
+        resPanel.setBorder(BorderFactory.createTitledBorder("我的预约"));
+        String[] rCols = {"ID", "场馆ID", "时间", "时长(h)", "状态"};
+        reservationTableModel = new DefaultTableModel(rCols, 0);
+        JTable resTable = new JTable(reservationTableModel);
+        resPanel.add(new JScrollPane(resTable), BorderLayout.CENTER);
+
+        JPanel resTools = new JPanel();
+        JButton refreshRes = new JButton("刷新预约");
+        JButton bookBtn = new JButton("预约选中场馆");
+
+        refreshRes.addActionListener(e -> loadReservationData());
+        bookBtn.addActionListener(e -> showBookDialog(venueTable));
+
+        resTools.add(refreshRes);
+        resTools.add(bookBtn);
+        resPanel.add(resTools, BorderLayout.SOUTH);
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, venuePanel, resPanel);
+        split.setResizeWeight(0.4);
+        mainPanel.add(split, BorderLayout.CENTER);
+
+        loadVenueData();
+        loadReservationData();
+
+        return mainPanel;
+    }
+
+    private void loadVenueData() {
+        venueTableModel.setRowCount(0);
+        List<Venue> list = reservationService.getAvailableVenues();
+        for (Venue v : list) {
+            venueTableModel.addRow(new Object[]{v.getVenueID(), v.getVenueName(), v.getCapacity(), v.getLocation()});
+        }
+    }
+
+    private void loadReservationData() {
+        reservationTableModel.setRowCount(0);
+        List<Reservation> list = reservationService.getReservationsByUser(student.getSid());
+        for (Reservation r : list) {
+            reservationTableModel.addRow(new Object[]{
+                r.getResID(), r.getVenueID(), r.getResTime(), r.getDuration(), r.getAuditStatus()
+            });
+        }
+    }
+
+    private void showBookDialog(JTable venueTable) {
+        int row = venueTable.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "请先选择一个场馆");
+            return;
+        }
+        int vid = (int) venueTableModel.getValueAt(row, 0);
+        String vName = (String) venueTableModel.getValueAt(row, 1);
+
+        JDialog d = new JDialog(this, "预约场馆 - " + vName, true);
+        d.setSize(350, 200);
+        d.setLayout(new GridLayout(4, 2));
+        d.setLocationRelativeTo(this);
+
+        JTextField dateF = new JTextField("2023-01-01 10:00:00"); // Placeholder example
+        JTextField durF = new JTextField("1.0");
+
+        d.add(new JLabel("开始时间 (yyyy-MM-dd HH:mm:ss):")); d.add(dateF);
+        d.add(new JLabel("时长 (小时):")); d.add(durF);
+        d.add(new JLabel("注意:")); d.add(new JLabel("格式需严格匹配"));
+
+        JButton ok = new JButton("提交申请");
+        ok.addActionListener(e -> {
+            try {
+                Timestamp ts = Timestamp.valueOf(dateF.getText());
+                int dur = Integer.parseInt(durF.getText());
+
+                Reservation r = new Reservation();
+                r.setVenueID(vid);
+                r.setReserverID(student.getSid());
+                r.setResTime(ts);
+                r.setDuration(dur);
+
+                String result = reservationService.submitReservationWithCheck(r);
+                JOptionPane.showMessageDialog(d, result);
+                if (result.contains("已提交")) {
+                    d.dispose();
+                    loadReservationData();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(d, "时间格式错误或输入非法: " + ex.getMessage());
+            }
+        });
+        d.add(ok);
+        d.setVisible(true);
+    }
+
+    // --- Card Panel ---
+    private JPanel createCardPanel() {
+        JPanel panel = new JPanel(null);
+
+        cardInfoLabel = new JLabel("正在获取校园卡信息...");
+        cardInfoLabel.setBounds(50, 50, 600, 30);
+        cardInfoLabel.setFont(new Font("微软雅黑", Font.BOLD, 16));
+        panel.add(cardInfoLabel);
+
+        JButton refreshBtn = new JButton("刷新信息");
+        refreshBtn.setBounds(50, 100, 100, 30);
+        refreshBtn.addActionListener(e -> loadCardInfo());
+        panel.add(refreshBtn);
+
+        JButton rechargeBtn = new JButton("充值");
+        rechargeBtn.setBounds(160, 100, 100, 30);
+        rechargeBtn.addActionListener(e -> {
+            String amount = JOptionPane.showInputDialog(this, "请输入充值金额:");
+            if (amount != null) {
+                try {
+                    CampusCard c = cardService.getCardInfo(student.getSid(), "student");
+                    if (c != null) {
+                        cardService.recharge(c.getCardID(), new BigDecimal(amount));
+                        JOptionPane.showMessageDialog(this, "充值操作完成");
+                        loadCardInfo();
                     } else {
-                        for (src.entity.Venue v : venues) {
-                            System.out.printf("ID: %d, 名称: %s, 容量: %d, 位置: %s\n",
-                                    v.getVenueID(), v.getVenueName(), v.getCapacity(), v.getLocation());
-                        }
+                        JOptionPane.showMessageDialog(this, "未找到校园卡");
                     }
-                    break;
-                case "2":
-                    System.out.print("请输入场地ID：");
-                    try {
-                        int vid = Integer.parseInt(scanner.nextLine());
-                        reservationService.checkVenueStatus(vid);
-                    } catch (NumberFormatException e) {
-                        System.out.println("输入格式错误。");
-                    }
-                    break;
-                case "3":
-                    System.out.print("请输入场地ID：");
-                    int venueId;
-                    try {
-                        venueId = Integer.parseInt(scanner.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("ID格式错误。");
-                        break;
-                    }
-
-                    // 显示当前时间作为样例
-                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String nowStr = sdf.format(new java.util.Date());
-                    System.out.println("当前时间: " + nowStr);
-                    System.out.print("请输入预约时间 (格式: yyyy-MM-dd HH:mm:ss)：");
-                    String dateStr = scanner.nextLine();
-
-                    System.out.print("请输入时长 (小时)：");
-                    int duration;
-                    try {
-                        duration = Integer.parseInt(scanner.nextLine());
-                        if (duration <= 0) {
-                            System.out.println("时长必须大于0。");
-                            break;
-                        }
-                    } catch (NumberFormatException e) {
-                        System.out.println("时长格式错误。");
-                        break;
-                    }
-
-                    try {
-                        Reservation r = new Reservation();
-                        r.setVenueID(venueId);
-                        r.setReserverID(student.getSid());
-                        r.setResTime(Timestamp.valueOf(dateStr));
-                        r.setDuration(duration);
-
-                        String result = reservationService.submitReservationWithCheck(r);
-                        System.out.println(result);
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("时间格式错误，请参考样例格式。");
-                    }
-                    break;
-                default:
-                    System.out.println("无效选项");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "金额格式错误");
+                }
             }
-        }
+        });
+        panel.add(rechargeBtn);
+
+        JButton lossBtn = new JButton("挂失");
+        lossBtn.setBounds(270, 100, 100, 30);
+        lossBtn.addActionListener(e -> {
+            if (JOptionPane.showConfirmDialog(this, "确定要挂失吗？") == JOptionPane.YES_OPTION) {
+                cardService.reportLoss(student.getSid(), "student");
+                JOptionPane.showMessageDialog(this, "挂失请求已提交");
+                loadCardInfo();
+            }
+        });
+        panel.add(lossBtn);
+
+        loadCardInfo();
+        return panel;
     }
 
-    private void showCardMenu() {
-        while (true) {
-            System.out.println("\n--- 校园卡服务 ---");
-            System.out.println("1. 查询余额");
-            System.out.println("2. 充值");
-            System.out.println("3. 挂失");
-            System.out.println("4. 解除挂失");
-            System.out.println("5. 注册校园卡");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
-
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
-
-            switch (choice) {
-                case "1":
-                    cardService.getCardInfo(student.getSid(), "student");
-                    break;
-                case "2":
-                    System.out.print("请输入卡号 (回车默认充值本卡)：");
-                    String cid = scanner.nextLine();
-                    if (cid.trim().isEmpty()) {
-                        src.entity.CampusCard myCard = cardService.getCardInfo(student.getSid(), "student");
-                        if (myCard != null) {
-                            cid = myCard.getCardID();
-                        } else {
-                            // getCardInfo 已经打印了未找到信息
-                            break;
-                        }
-                    }
-                    System.out.print("请输入金额：");
-                    try {
-                        java.math.BigDecimal amount = new java.math.BigDecimal(scanner.nextLine());
-                        cardService.recharge(cid, amount);
-                    } catch (NumberFormatException e) {
-                        System.out.println("金额格式错误");
-                    }
-                    break;
-                case "3":
-                    System.out.println("正在提交挂失请求...");
-                    cardService.reportLoss(student.getSid(), "student");
-                    break;
-                case "4":
-                    System.out.println("正在解除挂失...");
-                    cardService.cancelLoss(student.getSid(), "student");
-                    break;
-                case "5":
-                    System.out.print("请输入新卡号：");
-                    String newCid = scanner.nextLine();
-                    if (newCid.trim().isEmpty()) {
-                        System.out.println("卡号不能为空");
-                        break;
-                    }
-                    src.entity.CampusCard newCard = new src.entity.CampusCard();
-                    newCard.setCardID(newCid);
-                    newCard.setUserID(student.getSid());
-                    newCard.setUserType("student");
-                    newCard.setBalance(java.math.BigDecimal.ZERO);
-                    newCard.setStatus("正常");
-                    if (cardService.addCard(newCard)) {
-                        System.out.println("校园卡注册成功！");
-                    } else {
-                        System.out.println("校园卡注册失败（可能卡号已存在或您已绑定校园卡）。");
-                    }
-                    break;
-                default:
-                    System.out.println("无效选项");
+    private void loadCardInfo() {
+        CampusCard c = cardService.getCardInfo(student.getSid(), "student");
+        if (c != null) {
+            cardInfoLabel.setText(String.format("卡号: %s | 余额: %.2f | 状态: %s", c.getCardID(), c.getBalance(), c.getStatus()));
+            if ("挂失".equals(c.getStatus())) {
+                cardInfoLabel.setForeground(Color.RED);
+            } else {
+                cardInfoLabel.setForeground(Color.BLACK);
             }
+        } else {
+            cardInfoLabel.setText("您尚未办理校园卡");
         }
     }
 }
+

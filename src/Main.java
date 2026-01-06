@@ -18,10 +18,9 @@ public class Main {
         DatabaseInitializer.initDatabase();
 
         // 2. 启动登录界面
-        System.out.println("欢迎使用校园服务管理系统！");
-        // 创建登录视图对象并调用 show() 方法显示主菜单
-        new LoginView().show();
+        // 使用 SwingUtilities.invokeLater 确保 GUI 在事件调度线程中创建
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            new LoginView().show();
+        });
     }
 }
-
-

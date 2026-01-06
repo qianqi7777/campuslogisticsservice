@@ -1,343 +1,576 @@
 package src.view;
 
-import src.entity.Staff;
-import src.entity.Student;
-import src.service.UserService;
-import src.service.RepairService;
-import src.service.ReservationService;
-import src.service.CampusCardService;
-import src.entity.Reservation;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Vector;
+
+import src.entity.*;
+import src.service.*;
 
 /**
- * 管理员控制台视图：AdminView
- * 提供简单的命令行菜单，供管理员执行各类管理操作（当前部分功能为占位）
+ * 管理员控制台视图：Swing图形化界面
  */
-public class AdminView {
+public class AdminView extends JFrame {
     private Staff staff;
-    private Scanner scanner = new Scanner(System.in);
     private UserService userService = new UserService();
     private RepairService repairService = new RepairService();
     private ReservationService reservationService = new ReservationService();
     private CampusCardService cardService = new CampusCardService();
+    private VenueService venueService = new VenueService();
+
+    // Models for tables to refresh data
+    private DefaultTableModel studentTableModel;
+    private DefaultTableModel staffTableModel;
+    private DefaultTableModel repairTableModel;
+    private DefaultTableModel reservationTableModel;
+    private DefaultTableModel cardTableModel;
+    private DefaultTableModel venueTableModel;
 
     public AdminView(Staff staff) {
         this.staff = staff;
+        setTitle("系统管理后台 - " + staff.getEName());
+        setSize(1000, 768);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        initUI();
     }
 
-    /**
-     * 显示管理员主菜单并响应输入
-     * 当前实现为占位，真实功能应调用 AdminService 中具体业务方法
-     */
-    public void show() {
-        while (true) {
-            // 打印菜单选项
-            System.out.println("\n=== 管理员主菜单 (" + staff.getEName() + ") ===");
-            System.out.println("1. 账号管理 (设置/注销用户)");
-            System.out.println("2. 报修服务 (统计/分配)");
-            System.out.println("3. 预约服务 (审核)");
-            System.out.println("4. 校园卡服务 (挂失/恢复)");
-            System.out.println("0. 注销登录");
-            System.out.print("请选 择：");
+    private void initUI() {
+        JTabbedPane tabbedPane = new JTabbedPane();
 
-            // 读取用户输入
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
+        tabbedPane.addTab("主页", createHomePanel());
+        tabbedPane.addTab("用户管理", createAccountPanel());
+        tabbedPane.addTab("报修管理", createRepairPanel());
+        tabbedPane.addTab("场馆管理", createVenuePanel());
+        tabbedPane.addTab("预约审核", createReservationPanel());
+        tabbedPane.addTab("校园卡管理", createCardPanel());
 
-            switch (choice) {
-                case "1":
-                    showAccountMenu();
-                    break;
-                case "2":
-                    showRepairMenu();
-                    break;
-                case "3":
-                    showReservationMenu();
-                    break;
-                case "4":
-                    showCardMenu();
-                    break;
-                default:
-                    System.out.println("无效选项");
+        this.add(tabbedPane);
+    }
+
+    private JPanel createHomePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JLabel welcomeLabel = new JLabel("<html><div style='text-align: center;'><h2>欢迎管理员: " + staff.getEName() + "</h2><p>请点击上方标签页进行管理操作</p></div></html>", SwingConstants.CENTER);
+        panel.add(welcomeLabel, BorderLayout.CENTER);
+
+        JButton logoutBtn = new JButton("注销登录");
+        logoutBtn.addActionListener(e -> {
+            new LoginView().setVisible(true);
+            this.dispose();
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(logoutBtn);
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel createAccountPanel() {
+        JTabbedPane userTab = new JTabbedPane();
+
+        // --- Student Management ---
+        JPanel studentPanel = new JPanel(new BorderLayout());
+        String[] studentCols = {"学号", "姓名", "学院", "班级", "电话"};
+        studentTableModel = new DefaultTableModel(studentCols, 0);
+        JTable studentTable = new JTable(studentTableModel);
+        studentPanel.add(new JScrollPane(studentTable), BorderLayout.CENTER);
+
+        JPanel studentTools = new JPanel();
+        JButton refreshStudents = new JButton("刷新");
+        JButton addStudent = new JButton("添加学生");
+        JButton delStudent = new JButton("删除学生");
+
+        refreshStudents.addActionListener(e -> loadStudentData());
+        addStudent.addActionListener(e -> showAddStudentDialog());
+        delStudent.addActionListener(e -> {
+            int row = studentTable.getSelectedRow();
+            if (row >= 0) {
+                String sid = (String) studentTableModel.getValueAt(row, 0);
+                if (JOptionPane.showConfirmDialog(this, "确认删除学生 " + sid + " ?") == JOptionPane.YES_OPTION) {
+                    userService.deleteUser(sid, "student");
+                    loadStudentData();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "请选择一行");
             }
-        }
-    }
+        });
 
-    private void showAccountMenu() {
-        while (true) {
-            System.out.println("\n--- 账号管理 ---");
-            System.out.println("1. 添加学生");
-            System.out.println("2. 删除学生");
-            System.out.println("3. 查看所有学生");
-            System.out.println("4. 添加职工");
-            System.out.println("5. 删除职工");
-            System.out.println("6. 查看所有职工");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
+        studentTools.add(refreshStudents);
+        studentTools.add(addStudent);
+        studentTools.add(delStudent);
+        studentPanel.add(studentTools, BorderLayout.NORTH);
 
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
+        // --- Staff Management ---
+        JPanel staffPanel = new JPanel(new BorderLayout());
+        String[] staffCols = {"工号", "姓名", "部门", "职位", "电话"};
+        staffTableModel = new DefaultTableModel(staffCols, 0);
+        JTable staffTable = new JTable(staffTableModel);
+        staffPanel.add(new JScrollPane(staffTable), BorderLayout.CENTER);
 
-            switch (choice) {
-                case "1":
-                    addStudent();
-                    break;
-                case "2":
-                    deleteStudent();
-                    break;
-                case "3":
-                    listStudents();
-                    break;
-                case "4":
-                    addStaff();
-                    break;
-                case "5":
-                    deleteStaff();
-                    break;
-                case "6":
-                    listStaff();
-                    break;
-                default:
-                    System.out.println("无效选项");
+        JPanel staffTools = new JPanel();
+        JButton refreshStaff = new JButton("刷新");
+        JButton addStaff = new JButton("添加职工");
+        JButton delStaff = new JButton("删除职工");
+
+        refreshStaff.addActionListener(e -> loadStaffData());
+        addStaff.addActionListener(e -> showAddStaffDialog());
+        delStaff.addActionListener(e -> {
+            int row = staffTable.getSelectedRow();
+            if (row >= 0) {
+                String eid = (String) staffTableModel.getValueAt(row, 0);
+                if (JOptionPane.showConfirmDialog(this, "确认删除职工 " + eid + " ?") == JOptionPane.YES_OPTION) {
+                    userService.deleteUser(eid, "staff");
+                    loadStaffData();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "请选择一行");
             }
-        }
+        });
+
+        staffTools.add(refreshStaff);
+        staffTools.add(addStaff);
+        staffTools.add(delStaff);
+        staffPanel.add(staffTools, BorderLayout.NORTH);
+
+        userTab.addTab("学生列表", studentPanel);
+        userTab.addTab("职工列表", staffPanel);
+
+        // Initial Load
+        loadStudentData();
+        loadStaffData();
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(userTab, BorderLayout.CENTER);
+        return mainPanel;
     }
 
-    private void addStudent() {
-        System.out.println("请输入学生信息：");
-        System.out.print("学号：");
-        String sid = scanner.nextLine();
-        System.out.print("姓名：");
-        String name = scanner.nextLine();
-        System.out.print("学院：");
-        String college = scanner.nextLine();
-        System.out.print("手机号：");
-        String phone = scanner.nextLine();
-        System.out.print("年级：");
-        String grade = scanner.nextLine();
-        System.out.print("密码：");
-        String pwd = scanner.nextLine();
+    private JPanel createRepairPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        String[] columns = {"维修单ID", "内容", "提交时间", "状态", "提交人", "处理人"};
+        repairTableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(repairTableModel);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        Student s = new Student(sid, name, college, phone, grade, pwd);
-        if (userService.addUser(s)) {
-            System.out.println("添加学生成功！");
+        JPanel tools = new JPanel();
+        JButton refreshBtn = new JButton("刷新");
+        JButton assignBtn = new JButton("分配处理人");
+        JButton statsBtn = new JButton("查看统计");
+
+        refreshBtn.addActionListener(e -> loadRepairData());
+        assignBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                int rid = (int) repairTableModel.getValueAt(row, 0);
+                showSelectStaffDialog(rid);
+            } else {
+                 JOptionPane.showMessageDialog(this, "请选择一个维修单");
+            }
+        });
+        statsBtn.addActionListener(e -> {
+            JOptionPane.showMessageDialog(this, "统计及功能请查看控制台输出 (Service层目前设计为打印)");
+            repairService.getRepairStatistics();
+        });
+
+        tools.add(refreshBtn);
+        tools.add(assignBtn);
+        tools.add(statsBtn);
+        panel.add(tools, BorderLayout.NORTH);
+
+        loadRepairData();
+        return panel;
+    }
+
+    private JPanel createVenuePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        String[] columns = {"ID", "名称", "容量", "位置", "可用性"};
+        venueTableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(venueTableModel);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JPanel tools = new JPanel();
+        JButton refreshBtn = new JButton("刷新");
+        JButton addBtn = new JButton("添加场馆");
+        JButton delBtn = new JButton("删除");
+
+        refreshBtn.addActionListener(e -> loadVenueData());
+
+        addBtn.addActionListener(e -> showAddVenueDialog());
+
+        delBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                int vid = (int) venueTableModel.getValueAt(row, 0);
+                if (JOptionPane.showConfirmDialog(this, "确认删除场馆 ID: " + vid + " ?") == JOptionPane.YES_OPTION) {
+                    venueService.deleteVenue(vid);
+                    loadVenueData();
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "请选择一个场馆");
+            }
+        });
+
+        tools.add(refreshBtn);
+        tools.add(addBtn);
+        tools.add(delBtn);
+        panel.add(tools, BorderLayout.NORTH);
+
+        loadVenueData();
+        return panel;
+    }
+
+    private JPanel createReservationPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        String[] columns = {"预约ID", "场馆ID", "用户ID", "预约时间", "时长", "状态"};
+        reservationTableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(reservationTableModel);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JPanel tools = new JPanel();
+        JButton refreshBtn = new JButton("刷新");
+        JButton approveBtn = new JButton("通过");
+        JButton rejectBtn = new JButton("拒绝");
+
+        refreshBtn.addActionListener(e -> loadReservationData());
+        approveBtn.addActionListener(e -> handleAudit(table, true));
+        rejectBtn.addActionListener(e -> handleAudit(table, false));
+
+        tools.add(refreshBtn);
+        tools.add(approveBtn);
+        tools.add(rejectBtn);
+        panel.add(tools, BorderLayout.NORTH);
+
+        loadReservationData();
+        return panel;
+    }
+
+    private void handleAudit(JTable table, boolean pass) {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            int rid = (int) reservationTableModel.getValueAt(row, 0);
+            reservationService.auditReservation(rid, pass);
+            loadReservationData();
+            JOptionPane.showMessageDialog(this, pass ? "已通过" : "已拒绝");
         } else {
-            System.out.println("添加学生失败（可能学号已存在）。");
+            JOptionPane.showMessageDialog(this, "请选择预约申请");
         }
     }
 
-    private void deleteStudent() {
-        System.out.print("请输入要删除的学生学号：");
-        String sid = scanner.nextLine();
-        if (userService.deleteUser(sid, "student")) {
-            System.out.println("删除成功！");
+    private JPanel createCardPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        String[] columns = {"卡号", "余额", "状态", "用户ID", "用户类型"};
+        cardTableModel = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(cardTableModel);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JPanel tools = new JPanel();
+        JButton refreshBtn = new JButton("刷新");
+        JButton rechargeBtn = new JButton("充值");
+        JButton addBtn = new JButton("办卡");
+        JButton recoverBtn = new JButton("解挂");
+        JButton lossBtn = new JButton("挂失");
+
+        refreshBtn.addActionListener(e -> loadCardData());
+        rechargeBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                String cid = (String) cardTableModel.getValueAt(row, 0);
+                String amountStr = JOptionPane.showInputDialog(this, "请输入充值金额:");
+                try {
+                    BigDecimal amount = new BigDecimal(amountStr);
+                    cardService.recharge(cid, amount);
+                    loadCardData();
+                    JOptionPane.showMessageDialog(this, "充值成功");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "金额格式错误");
+                }
+            } else {
+                 JOptionPane.showMessageDialog(this, "请选择校园卡");
+            }
+        });
+
+        recoverBtn.addActionListener(e -> handleCardStatus(table, true));
+        lossBtn.addActionListener(e -> handleCardStatus(table, false));
+
+        addBtn.addActionListener(e -> showAddCardDialog());
+
+        tools.add(refreshBtn);
+        tools.add(addBtn);
+        tools.add(rechargeBtn);
+        tools.add(recoverBtn);
+        tools.add(lossBtn);
+        panel.add(tools, BorderLayout.NORTH);
+
+        loadCardData();
+        return panel;
+    }
+
+    private void handleCardStatus(JTable table, boolean recover) {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            String cid = (String) cardTableModel.getValueAt(row, 0);
+            cardService.handleCardStatus(cid, recover);
+            loadCardData();
+            JOptionPane.showMessageDialog(this, recover ? "已设为正常" : "已设为挂失");
         } else {
-            System.out.println("删除失败（学生不存在）。");
+            JOptionPane.showMessageDialog(this, "请选择校园卡");
         }
     }
 
-    private void listStudents() {
+    // --- Data Loading Methods ---
+
+    private void loadStudentData() {
+        studentTableModel.setRowCount(0);
         List<Student> list = userService.getAllStudents();
-        System.out.println("\n--- 学生列表 ---");
-        System.out.printf("%-10s %-10s %-15s %-12s %-10s\n", "学号", "姓名", "学院", "手机号", "年级");
         for (Student s : list) {
-            System.out.printf("%-10s %-10s %-15s %-12s %-10s\n", s.getSid(), s.getSName(), s.getCollege(), s.getPhone(), s.getGrade());
+            studentTableModel.addRow(new Object[]{s.getSid(), s.getSName(), s.getCollege(), s.getGrade(), s.getPhone()});
         }
     }
 
-    private void addStaff() {
-        System.out.println("请输入职工信息：");
-        System.out.print("工号：");
-        String eid = scanner.nextLine();
-        System.out.print("姓名：");
-        String name = scanner.nextLine();
-        System.out.print("部门：");
-        String dept = scanner.nextLine();
-        System.out.print("手机号：");
-        String phone = scanner.nextLine();
-        System.out.print("职位：");
-        String position = scanner.nextLine();
-        System.out.print("密码：");
-        String pwd = scanner.nextLine();
-
-        Staff s = new Staff(eid, name, dept, phone, position, pwd);
-        if (userService.addUser(s)) {
-            System.out.println("添加职工成功！");
-        } else {
-            System.out.println("添加职工失败（可能工号已存在）。");
-        }
-    }
-
-    private void deleteStaff() {
-        System.out.print("请输入要删除的职工工号：");
-        String eid = scanner.nextLine();
-        // 防止删除自己
-        if (eid.equals(staff.getEid())) {
-            System.out.println("不能删除当前登录的管理员账号！");
-            return;
-        }
-        if (userService.deleteUser(eid, "staff")) {
-            System.out.println("删除成功！");
-        } else {
-            System.out.println("删除失败（职工不存在）。");
-        }
-    }
-
-    private void listStaff() {
+    private void loadStaffData() {
+        staffTableModel.setRowCount(0);
         List<Staff> list = userService.getAllStaff();
-        System.out.println("\n--- 职工列表 ---");
-        System.out.printf("%-10s %-10s %-15s %-12s %-10s\n", "工号", "姓名", "部门", "手机号", "职位");
         for (Staff s : list) {
-            System.out.printf("%-10s %-10s %-15s %-12s %-10s\n", s.getEid(), s.getEName(), s.getDept(), s.getPhone(), s.getPosition());
+            staffTableModel.addRow(new Object[]{s.getEid(), s.getEName(), s.getDept(), s.getPosition(), s.getPhone()});
         }
     }
 
-    private void showRepairMenu() {
-        while (true) {
-            System.out.println("\n--- 报修服务 ---");
-            System.out.println("1. 统计报修数量");
-            System.out.println("2. 分配维修任务");
-            System.out.println("3. 查看所有报修单");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
-
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
-
-            switch (choice) {
-                case "1":
-                    repairService.getRepairStatistics();
-                    break;
-                case "2":
-                    // 简单示例：输入ID分配
-                    System.out.print("请输入维修单ID：");
-                    int rid = Integer.parseInt(scanner.nextLine());
-
-                    // 显示职工列表供选择
-                    listStaff();
-
-                    System.out.print("请输入指派的职工工号：");
-                    String eid = scanner.nextLine();
-                    repairService.assignRepairTask(rid, eid);
-                    break;
-                case "3":
-                    List<src.entity.Repair> list = repairService.getAllRepairs();
-                    System.out.println("--- 所有报修单 ---");
-                    for (src.entity.Repair r : list) {
-                        System.out.printf("ID: %d, 内容: %s, 状态: %s, 提交人: %s, 处理人: %s\n",
-                            r.getRepairID(), r.getContent(), r.getStatus(), r.getSubmitterID(), r.getHandlerID());
-                    }
-                    break;
-                default:
-                    System.out.println("无效选项");
-            }
+    private void loadRepairData() {
+        repairTableModel.setRowCount(0);
+        List<Repair> list = repairService.getAllRepairs();
+        for (Repair r : list) {
+            repairTableModel.addRow(new Object[]{
+                r.getRepairID(), r.getContent(), r.getSubmitTime(), r.getStatus(), r.getSubmitterID(), r.getHandlerID()
+            });
         }
     }
 
-    private void showReservationMenu() {
-        while (true) {
-            System.out.println("\n--- 预约服务 ---");
-            System.out.println("1. 审核预约申请");
-            System.out.println("2. 查看所有预约");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
-
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
-
-            switch (choice) {
-                case "1":
-                    // 列出待审核预约
-                    List<Reservation> allRes = reservationService.getAllReservations();
-                    System.out.println("--- 待审核预约 ---");
-                    boolean hasPending = false;
-                    for (Reservation r : allRes) {
-                        if ("待审核".equals(r.getAuditStatus())) {
-                            System.out.printf("ID: %d, 场馆ID: %d, 预约人: %s, 时间: %s\n",
-                                r.getResID(), r.getVenueID(), r.getReserverID(), r.getResTime());
-                            hasPending = true;
-                        }
-                    }
-                    if (!hasPending) {
-                        System.out.println("暂无待审核预约。");
-                        break;
-                    }
-
-                    System.out.print("请输入预约ID：");
-                    int rid = Integer.parseInt(scanner.nextLine());
-                    System.out.print("是否通过 (y/n)：");
-                    String pass = scanner.nextLine();
-                    reservationService.auditReservation(rid, "y".equalsIgnoreCase(pass));
-                    break;
-                case "2":
-                    List<src.entity.Reservation> list = reservationService.getAllReservations();
-                    System.out.println("--- 所有预约 ---");
-                    for (src.entity.Reservation r : list) {
-                        System.out.printf("ID: %d, 场馆ID: %d, 预约人: %s, 时间: %s, 状态: %s\n",
-                            r.getResID(), r.getVenueID(), r.getReserverID(), r.getResTime(), r.getAuditStatus());
-                    }
-                    break;
-                default:
-                    System.out.println("无效选项");
-            }
+    private void loadVenueData() {
+        venueTableModel.setRowCount(0);
+        List<Venue> list = venueService.getAllVenues();
+        for (Venue v : list) {
+            venueTableModel.addRow(new Object[]{
+                v.getVenueID(), v.getVenueName(), v.getCapacity(), v.getLocation(), v.getIsAvailable()
+            });
         }
     }
 
-    private void showCardMenu() {
-        while (true) {
-            System.out.println("\n--- 校园卡服务 ---");
-            System.out.println("1. 挂失/恢复校园卡");
-            System.out.println("2. 查看所有校园卡");
-            System.out.println("3. 添加校园卡");
-            System.out.println("0. 返回");
-            System.out.print("请选择：");
-
-            String choice = scanner.nextLine();
-            if ("0".equals(choice)) return;
-
-            switch (choice) {
-                case "1":
-                    System.out.print("请输入卡号：");
-                    String cid = scanner.nextLine();
-                    System.out.print("操作类型 (1.挂失 2.恢复)：");
-                    String type = scanner.nextLine();
-                    cardService.handleCardStatus(cid, "2".equals(type));
-                    break;
-                case "2":
-                    List<src.entity.CampusCard> list = cardService.getAllCards();
-                    System.out.println("--- 所有校园卡 ---");
-                    for (src.entity.CampusCard c : list) {
-                        System.out.printf("卡号: %s, 用户: %s, 类型: %s, 余额: %.2f, 状态: %s\n",
-                            c.getCardID(), c.getUserID(), c.getUserType(), c.getBalance(), c.getStatus());
-                    }
-                    break;
-                case "3":
-                    System.out.print("请输入卡号：");
-                    String newCid = scanner.nextLine();
-                    System.out.print("请输入用户ID (学号/工号)：");
-                    String uid = scanner.nextLine();
-                    System.out.print("请输入用户类型 (student/staff)：");
-                    String uType = scanner.nextLine();
-                    System.out.print("请输入初始余额：");
-                    java.math.BigDecimal balance = new java.math.BigDecimal(scanner.nextLine());
-
-                    src.entity.CampusCard newCard = new src.entity.CampusCard();
-                    newCard.setCardID(newCid);
-                    newCard.setUserID(uid);
-                    newCard.setUserType(uType);
-                    newCard.setBalance(balance);
-                    newCard.setStatus("正常");
-
-                    if (cardService.addCard(newCard)) {
-                        System.out.println("添加校园卡成功！");
-                    } else {
-                        System.out.println("添加校园卡失败。");
-                    }
-                    break;
-                default:
-                    System.out.println("无效选项");
-            }
+    private void loadReservationData() {
+        reservationTableModel.setRowCount(0);
+        List<Reservation> list = reservationService.getAllReservations();
+        for (Reservation r : list) {
+            reservationTableModel.addRow(new Object[]{
+                r.getResID(), r.getVenueID(), r.getReserverID(), r.getResTime(), r.getDuration(), r.getAuditStatus()
+            });
         }
+    }
+
+    private void loadCardData() {
+        cardTableModel.setRowCount(0);
+        List<CampusCard> list = cardService.getAllCards();
+        for (CampusCard c : list) {
+            cardTableModel.addRow(new Object[]{
+                c.getCardID(), c.getBalance(), c.getStatus(), c.getUserID(), c.getUserType()
+            });
+        }
+    }
+
+    // --- Dialogs ---
+
+    private void showAddStudentDialog() {
+        JDialog d = new JDialog(this, "添加学生", true);
+        d.setSize(300, 300);
+        d.setLayout(new GridLayout(7, 2));
+        d.setLocationRelativeTo(this);
+
+        JTextField idF = new JTextField();
+        JTextField nameF = new JTextField();
+        JTextField colF = new JTextField();
+        JTextField gradeF = new JTextField();
+        JTextField phoneF = new JTextField();
+        JTextField pwdF = new JTextField();
+
+        d.add(new JLabel("学号:")); d.add(idF);
+        d.add(new JLabel("姓名:")); d.add(nameF);
+        d.add(new JLabel("学院:")); d.add(colF);
+        d.add(new JLabel("班级:")); d.add(gradeF);
+        d.add(new JLabel("电话:")); d.add(phoneF);
+        d.add(new JLabel("密码:")); d.add(pwdF);
+
+        JButton ok = new JButton("确定");
+        ok.addActionListener(e -> {
+            Student s = new Student(idF.getText(), nameF.getText(), colF.getText(), phoneF.getText(), gradeF.getText(), pwdF.getText());
+            if (userService.addUser(s)) {
+                JOptionPane.showMessageDialog(d, "添加成功");
+                d.dispose();
+                loadStudentData();
+            } else {
+                JOptionPane.showMessageDialog(d, "添加失败");
+            }
+        });
+        d.add(ok);
+        d.setVisible(true);
+    }
+
+    private void showAddStaffDialog() {
+        JDialog d = new JDialog(this, "添加职工", true);
+        d.setSize(300, 300);
+        d.setLayout(new GridLayout(7, 2));
+        d.setLocationRelativeTo(this);
+
+        JTextField idF = new JTextField();
+        JTextField nameF = new JTextField();
+        JTextField deptF = new JTextField();
+        JTextField posF = new JTextField();
+        JTextField phoneF = new JTextField();
+        JTextField pwdF = new JTextField();
+
+        d.add(new JLabel("工号:")); d.add(idF);
+        d.add(new JLabel("姓名:")); d.add(nameF);
+        d.add(new JLabel("部门:")); d.add(deptF);
+        d.add(new JLabel("职位:")); d.add(posF);
+        d.add(new JLabel("电话:")); d.add(phoneF);
+        d.add(new JLabel("密码:")); d.add(pwdF);
+
+        JButton ok = new JButton("确定");
+        ok.addActionListener(e -> {
+            Staff s = new Staff(idF.getText(), nameF.getText(), deptF.getText(), posF.getText(), phoneF.getText(), pwdF.getText());
+            if (userService.addUser(s)) {
+                JOptionPane.showMessageDialog(d, "添加成功");
+                d.dispose();
+                loadStaffData();
+            } else {
+                JOptionPane.showMessageDialog(d, "添加失败");
+            }
+        });
+        d.add(ok);
+        d.setVisible(true);
+    }
+
+    private void showAddVenueDialog() {
+        JDialog d = new JDialog(this, "添加场馆", true);
+        d.setSize(300, 250);
+        d.setLayout(new GridLayout(5, 2));
+        d.setLocationRelativeTo(this);
+
+        JTextField nameF = new JTextField();
+        JTextField capF = new JTextField();
+        JTextField locF = new JTextField();
+        JComboBox<String> availBox = new JComboBox<>(new String[]{"是", "否"});
+
+        d.add(new JLabel("名称:")); d.add(nameF);
+        d.add(new JLabel("容量:")); d.add(capF);
+        d.add(new JLabel("位置:")); d.add(locF);
+        d.add(new JLabel("可用:")); d.add(availBox);
+
+        JButton ok = new JButton("确定");
+        ok.addActionListener(e -> {
+            try {
+                String name = nameF.getText().trim();
+                int cap = Integer.parseInt(capF.getText().trim());
+                String loc = locF.getText().trim();
+
+                if (name.isEmpty()) {
+                    JOptionPane.showMessageDialog(d, "名称不能为空");
+                    return;
+                }
+
+                Venue v = new Venue();
+                v.setVenueName(name);
+                v.setCapacity(cap);
+                v.setLocation(loc);
+                v.setIsAvailable((String) availBox.getSelectedItem());
+
+                venueService.addVenue(v);
+                JOptionPane.showMessageDialog(d, "添加成功");
+                d.dispose();
+                loadVenueData();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(d, "容量必须为整数");
+            }
+        });
+        d.add(ok);
+        d.setVisible(true);
+    }
+
+    private void showAddCardDialog() {
+        JDialog d = new JDialog(this, "办理校园卡", true);
+        d.setSize(300, 250);
+        d.setLayout(new GridLayout(5, 2));
+        d.setLocationRelativeTo(this);
+
+        JTextField cardIdF = new JTextField();
+        JTextField userIdF = new JTextField();
+        JComboBox<String> typeBox = new JComboBox<>(new String[]{"student", "staff"});
+        JTextField balanceF = new JTextField("0");
+
+        d.add(new JLabel("卡号:")); d.add(cardIdF);
+        d.add(new JLabel("用户ID:")); d.add(userIdF);
+        d.add(new JLabel("类型:")); d.add(typeBox);
+        d.add(new JLabel("初始余额:")); d.add(balanceF);
+
+        JButton ok = new JButton("确定");
+        ok.addActionListener(e -> {
+            CampusCard c = new CampusCard();
+            c.setCardID(cardIdF.getText());
+            c.setUserID(userIdF.getText());
+            c.setUserType((String) typeBox.getSelectedItem());
+            c.setBalance(new BigDecimal(balanceF.getText()));
+            c.setStatus("正常");
+
+            if (cardService.addCard(c)) {
+                JOptionPane.showMessageDialog(d, "办卡成功");
+                d.dispose();
+                loadCardData();
+            } else {
+                JOptionPane.showMessageDialog(d, "办卡失败");
+            }
+        });
+        d.add(ok);
+        d.setVisible(true);
+    }
+
+    private void showSelectStaffDialog(int repairId) {
+        JDialog d = new JDialog(this, "选择处理人", true);
+        d.setSize(500, 400);
+        d.setLayout(new BorderLayout());
+        d.setLocationRelativeTo(this);
+
+        String[] cols = {"工号", "姓名", "部门", "职位"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0);
+        JTable table = new JTable(model);
+
+        // Load staff
+        List<Staff> list = userService.getAllStaff();
+        for (Staff s : list) {
+            model.addRow(new Object[]{s.getEid(), s.getEName(), s.getDept(), s.getPosition()});
+        }
+
+        d.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JButton ok = new JButton("确定分配");
+        ok.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row >= 0) {
+                String eid = (String) model.getValueAt(row, 0);
+                repairService.assignHandler(repairId, eid);
+                repairService.updateRepairStatus(repairId, "处理中");
+                JOptionPane.showMessageDialog(d, "已分配给: " + model.getValueAt(row, 1));
+                d.dispose();
+                loadRepairData();
+            } else {
+                JOptionPane.showMessageDialog(d, "请选择一名职工");
+            }
+        });
+
+        JPanel btnPanel = new JPanel();
+        btnPanel.add(ok);
+        d.add(btnPanel, BorderLayout.SOUTH);
+
+        d.setVisible(true);
     }
 }
+
