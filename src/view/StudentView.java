@@ -338,6 +338,37 @@ public class StudentView extends JFrame {
         });
         panel.add(lossBtn);
 
+        JButton addCardBtn = new JButton("自助办卡");
+        addCardBtn.setBounds(380, 100, 100, 30);
+        addCardBtn.addActionListener(e -> {
+            // Check if card exists
+             CampusCard c = cardService.getCardInfo(student.getSid(), "student");
+             if (c != null) {
+                 JOptionPane.showMessageDialog(this, "您已持有校园卡，无需重复办理。");
+                 return;
+             }
+             // Simple add logic - usually needs ID check etc. but here simplified.
+             String cardId = JOptionPane.showInputDialog(this, "请输入新卡号 (或留空自动生成):");
+             if (cardId == null) return;
+             if (cardId.trim().isEmpty()) {
+                 cardId = "S" + student.getSid(); // Auto generate
+             }
+             CampusCard newCard = new CampusCard();
+             newCard.setCardID(cardId);
+             newCard.setUserID(student.getSid());
+             newCard.setUserType("student");
+             newCard.setBalance(BigDecimal.ZERO);
+             newCard.setStatus("正常");
+
+             if (cardService.addCard(newCard)) {
+                 JOptionPane.showMessageDialog(this, "办卡成功！卡号: " + cardId);
+                 loadCardInfo();
+             } else {
+                 JOptionPane.showMessageDialog(this, "办卡失败，卡号可能已存在。");
+             }
+        });
+        panel.add(addCardBtn);
+
         loadCardInfo();
         return panel;
     }

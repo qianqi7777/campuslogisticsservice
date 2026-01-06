@@ -288,6 +288,35 @@ public class StaffView extends JFrame {
         });
         panel.add(lossBtn);
 
+        JButton addCardBtn = new JButton("自助办卡");
+        addCardBtn.setBounds(380, 100, 100, 30);
+        addCardBtn.addActionListener(e -> {
+             CampusCard c = cardService.getCardInfo(staff.getEid(), "staff");
+             if (c != null) {
+                 JOptionPane.showMessageDialog(this, "您已持有校园卡，无需重复办理。");
+                 return;
+             }
+             String cardId = JOptionPane.showInputDialog(this, "请输入新卡号 (或留空自动生成):");
+             if (cardId == null) return;
+             if (cardId.trim().isEmpty()) {
+                 cardId = "E" + staff.getEid(); // Auto generate for staff
+             }
+             CampusCard newCard = new CampusCard();
+             newCard.setCardID(cardId);
+             newCard.setUserID(staff.getEid());
+             newCard.setUserType("staff");
+             newCard.setBalance(BigDecimal.ZERO);
+             newCard.setStatus("正常");
+
+             if (cardService.addCard(newCard)) {
+                 JOptionPane.showMessageDialog(this, "办卡成功！卡号: " + cardId);
+                 loadCardInfo();
+             } else {
+                 JOptionPane.showMessageDialog(this, "办卡失败，卡号可能已存在。");
+             }
+        });
+        panel.add(addCardBtn);
+
         loadCardInfo();
         return panel;
     }
