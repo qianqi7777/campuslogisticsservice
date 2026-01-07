@@ -171,8 +171,13 @@ public class AdminView extends JFrame {
             }
         });
         statsBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "统计及功能请查看控制台输出 (Service层目前设计为打印)");
-            repairService.getRepairStatistics();
+            java.util.Map<String, Integer> stats = repairService.getRepairStatsMap();
+            StringBuilder sb = new StringBuilder();
+            sb.append("--- 报修统计 ---\n");
+            for (java.util.Map.Entry<String, Integer> entry : stats.entrySet()) {
+                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            }
+             JOptionPane.showMessageDialog(this, sb.toString(), "统计结果", JOptionPane.INFORMATION_MESSAGE);
         });
 
         tools.add(refreshBtn);
@@ -498,25 +503,56 @@ public class AdminView extends JFrame {
 
     private void showAddCardDialog() {
         JDialog d = new JDialog(this, "办理校园卡", true);
-        d.setSize(300, 250);
+        d.setSize(400, 300);
         d.setLayout(new GridLayout(5, 2));
         d.setLocationRelativeTo(this);
 
         JTextField cardIdF = new JTextField();
-        JTextField userIdF = new JTextField();
         JComboBox<String> typeBox = new JComboBox<>(new String[]{"student", "staff"});
+        JComboBox<String> userBox = new JComboBox<>(); // Dropdown for users
         JTextField balanceF = new JTextField("0");
 
-        d.add(new JLabel("卡号:")); d.add(cardIdF);
-        d.add(new JLabel("用户ID:")); d.add(userIdF);
+        // Function to reload user list based on type
+        Runnable reloadUsers = () -> {
+            userBox.removeAllItems();
+            String type = (String) typeBox.getSelectedItem();
+            if ("student".equals(type)) {
+                List<Student> list = userService.getAllStudents();
+                for (Student s : list) {
+                    userBox.addItem(s.getSid() + " - " + s.getSName());
+                }
+            } else {
+                List<Staff> list = userService.getAllStaff();
+                for (Staff s : list) {
+                    userBox.addItem(s.getEid() + " - " + s.getEName());
+                }
+            }
+        };
+
+        // Initialize user list
+        reloadUsers.run();
+
+        // Add listener to typeBox to update user list
+        typeBox.addActionListener(e -> reloadUsers.run());
+
         d.add(new JLabel("类型:")); d.add(typeBox);
+        d.add(new JLabel("选择用户:")); d.add(userBox);
+        d.add(new JLabel("卡号:")); d.add(cardIdF);
         d.add(new JLabel("初始余额:")); d.add(balanceF);
 
         JButton ok = new JButton("确定");
         ok.addActionListener(e -> {
+            String selectedUser = (String) userBox.getSelectedItem();
+            if (selectedUser == null) {
+                JOptionPane.showMessageDialog(d, "请选择用户");
+                return;
+            }
+            // Parse ID from "ID - Name"
+            String userId = selectedUser.split(" - ")[0];
+
             CampusCard c = new CampusCard();
             c.setCardID(cardIdF.getText());
-            c.setUserID(userIdF.getText());
+            c.setUserID(userId);
             c.setUserType((String) typeBox.getSelectedItem());
             c.setBalance(new BigDecimal(balanceF.getText()));
             c.setStatus("正常");

@@ -113,6 +113,19 @@ public class RepairService {
     }
 
     /**
+     * 获取报修统计数据 (管理员 - 返回Map供界面使用)
+     * @return 状态统计Map
+     */
+    public Map<String, Integer> getRepairStatsMap() {
+        List<Repair> all = repairDAO.selectAll();
+        Map<String, Integer> stats = new HashMap<>();
+        for (Repair r : all) {
+            stats.put(r.getStatus(), stats.getOrDefault(r.getStatus(), 0) + 1);
+        }
+        return stats;
+    }
+
+    /**
      * 分配维修任务 (管理员)
      * @param repairId 维修单ID
      * @param staffId 职工ID

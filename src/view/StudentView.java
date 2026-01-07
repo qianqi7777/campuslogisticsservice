@@ -255,21 +255,28 @@ public class StudentView extends JFrame {
         String vName = (String) venueTableModel.getValueAt(row, 1);
 
         JDialog d = new JDialog(this, "预约场馆 - " + vName, true);
-        d.setSize(350, 200);
+        d.setSize(400, 250);
         d.setLayout(new GridLayout(4, 2));
         d.setLocationRelativeTo(this);
 
-        JTextField dateF = new JTextField("2023-01-01 10:00:00"); // Placeholder example
-        JTextField durF = new JTextField("1.0");
+        // 使用JSpinner选择时间
+        SpinnerDateModel model = new SpinnerDateModel();
+        JSpinner dateSpinner = new JSpinner(model);
+        JSpinner.DateEditor editor = new JSpinner.DateEditor(dateSpinner, "yyyy-MM-dd HH:mm:ss");
+        dateSpinner.setEditor(editor);
+        dateSpinner.setValue(new java.util.Date()); // 默认当前时间
 
-        d.add(new JLabel("开始时间 (yyyy-MM-dd HH:mm:ss):")); d.add(dateF);
+        JTextField durF = new JTextField("1"); // 默认1小时
+
+        d.add(new JLabel("开始时间:")); d.add(dateSpinner);
         d.add(new JLabel("时长 (小时):")); d.add(durF);
-        d.add(new JLabel("注意:")); d.add(new JLabel("格式需严格匹配"));
+        d.add(new JLabel("注意:")); d.add(new JLabel("请选择合适的时间"));
 
         JButton ok = new JButton("提交申请");
         ok.addActionListener(e -> {
             try {
-                Timestamp ts = Timestamp.valueOf(dateF.getText());
+                java.util.Date date = (java.util.Date) dateSpinner.getValue();
+                Timestamp ts = new Timestamp(date.getTime());
                 int dur = Integer.parseInt(durF.getText());
 
                 Reservation r = new Reservation();
@@ -285,7 +292,7 @@ public class StudentView extends JFrame {
                     loadReservationData();
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(d, "时间格式错误或输入非法: " + ex.getMessage());
+                JOptionPane.showMessageDialog(d, "输入非法: " + ex.getMessage());
             }
         });
         d.add(ok);
